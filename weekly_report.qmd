@@ -12,7 +12,7 @@ execute:
   message: false
 ---
 
-```{r setup}
+```{r setup, message=FALSE, warning=FALSE}
 library(httr)
 library(dplyr)
 library(knitr)
@@ -63,20 +63,22 @@ total_assessments_4wk <- nrow(res_data[res_data$redcap_repeat_instrument == "Ass
 ### Academic Year
 
 ```{r metrics-year, results='asis'}
-cat('<div style="display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap;">')
-cat('  <div style="text-align: center; padding: 20px; background: #f0f9ff; border-radius: 10px; min-width: 200px; margin: 10px;">')
-cat('    <div style="font-size: 48px; font-weight: bold; color: #0369a1;">', round(avg_evals_year, 1), '</div>')
-cat('    <div style="font-size: 14px; color: #64748b;">Avg Evaluations/Resident</div>')
-cat('  </div>')
-cat('  <div style="text-align: center; padding: 20px; background: #f0fdf4; border-radius: 10px; min-width: 200px; margin: 10px;">')
-cat('    <div style="font-size: 48px; font-weight: bold; color: #15803d;">', total_assessments_year, '</div>')
-cat('    <div style="font-size: 14px; color: #64748b;">Total Assessments</div>')
-cat('  </div>')
-cat('  <div style="text-align: center; padding: 20px; background: #fef3c7; border-radius: 10px; min-width: 200px; margin: 10px;">')
-cat('    <div style="font-size: 48px; font-weight: bold; color: #b45309;">', round(avg_conf_year, 1), '</div>')
-cat('    <div style="font-size: 14px; color: #64748b;">Avg Conferences/Resident</div>')
-cat('  </div>')
-cat('</div>')
+cat(paste0(
+  '<div style="display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap;">',
+  '  <div style="text-align: center; padding: 20px; background: #f0f9ff; border-radius: 10px; min-width: 200px; margin: 10px;">',
+  '    <div style="font-size: 48px; font-weight: bold; color: #0369a1;">', round(avg_evals_year, 1), '</div>',
+  '    <div style="font-size: 14px; color: #64748b;">Avg Evaluations/Resident</div>',
+  '  </div>',
+  '  <div style="text-align: center; padding: 20px; background: #f0fdf4; border-radius: 10px; min-width: 200px; margin: 10px;">',
+  '    <div style="font-size: 48px; font-weight: bold; color: #15803d;">', total_assessments_year, '</div>',
+  '    <div style="font-size: 14px; color: #64748b;">Total Assessments</div>',
+  '  </div>',
+  '  <div style="text-align: center; padding: 20px; background: #fef3c7; border-radius: 10px; min-width: 200px; margin: 10px;">',
+  '    <div style="font-size: 48px; font-weight: bold; color: #b45309;">', round(avg_conf_year, 1), '</div>',
+  '    <div style="font-size: 14px; color: #64748b;">Avg Conferences/Resident</div>',
+  '  </div>',
+  '</div>'
+))
 ```
 
 *Since `r format(academic_year_start, "%B %d, %Y")`*
@@ -84,20 +86,22 @@ cat('</div>')
 ### Last 4 Weeks
 
 ```{r metrics-4wk, results='asis'}
-cat('<div style="display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap;">')
-cat('  <div style="text-align: center; padding: 20px; background: #f0f9ff; border-radius: 10px; min-width: 200px; margin: 10px;">')
-cat('    <div style="font-size: 48px; font-weight: bold; color: #0369a1;">', round(avg_evals_4wk, 1), '</div>')
-cat('    <div style="font-size: 14px; color: #64748b;">Avg Evaluations/Resident</div>')
-cat('  </div>')
-cat('  <div style="text-align: center; padding: 20px; background: #f0fdf4; border-radius: 10px; min-width: 200px; margin: 10px;">')
-cat('    <div style="font-size: 48px; font-weight: bold; color: #15803d;">', total_assessments_4wk, '</div>')
-cat('    <div style="font-size: 14px; color: #64748b;">Total Assessments</div>')
-cat('  </div>')
-cat('  <div style="text-align: center; padding: 20px; background: #fef3c7; border-radius: 10px; min-width: 200px; margin: 10px;">')
-cat('    <div style="font-size: 48px; font-weight: bold; color: #b45309;">', round(avg_conf_4wk, 1), '</div>')
-cat('    <div style="font-size: 14px; color: #64748b;">Avg Conferences/Resident</div>')
-cat('  </div>')
-cat('</div>')
+cat(paste0(
+  '<div style="display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap;">',
+  '  <div style="text-align: center; padding: 20px; background: #f0f9ff; border-radius: 10px; min-width: 200px; margin: 10px;">',
+  '    <div style="font-size: 48px; font-weight: bold; color: #0369a1;">', round(avg_evals_4wk, 1), '</div>',
+  '    <div style="font-size: 14px; color: #64748b;">Avg Evaluations/Resident</div>',
+  '  </div>',
+  '  <div style="text-align: center; padding: 20px; background: #f0fdf4; border-radius: 10px; min-width: 200px; margin: 10px;">',
+  '    <div style="font-size: 48px; font-weight: bold; color: #15803d;">', total_assessments_4wk, '</div>',
+  '    <div style="font-size: 14px; color: #64748b;">Total Assessments</div>',
+  '  </div>',
+  '  <div style="text-align: center; padding: 20px; background: #fef3c7; border-radius: 10px; min-width: 200px; margin: 10px;">',
+  '    <div style="font-size: 48px; font-weight: bold; color: #b45309;">', round(avg_conf_4wk, 1), '</div>',
+  '    <div style="font-size: 14px; color: #64748b;">Avg Conferences/Resident</div>',
+  '  </div>',
+  '</div>'
+))
 ```
 
 *Last 28 days*
