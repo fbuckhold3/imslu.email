@@ -2,11 +2,7 @@
 .Renviron
 .RData
 .Rhistory
-
-# renv
-renv/library/
-renv/local/
-renv/staging/
+renv.lock
 
 # Quarto
 .quarto/

@@ -1,21 +1,10 @@
-# Initial Setup Instructions
+# Setup Instructions
 
-## First-Time Setup (Run Locally)
+## Local Testing
 
-Since R is not available in this environment, you'll need to initialize `renv` on your local machine.
-
-### Step 1: Initialize renv
-
-Open R or RStudio in this project directory and run:
+### 1. Install Required R Packages
 
 ```r
-# Install renv if you don't have it
-install.packages("renv")
-
-# Initialize renv for this project
-renv::init()
-
-# Install required packages
 install.packages(c(
   "httr",      # REDCap API calls
   "dplyr",     # Data manipulation
@@ -23,42 +12,78 @@ install.packages(c(
   "knitr",     # Tables
   "quarto"     # Document rendering
 ))
-
-# Snapshot the dependencies
-renv::snapshot()
 ```
 
-### Step 2: Setup Environment Variables
+### 2. Setup Environment Variables
 
 ```bash
 cp .Renviron.example .Renviron
 ```
 
-Edit `.Renviron` with your actual REDCap tokens.
+Edit `.Renviron` with your actual REDCap tokens:
 
-### Step 3: Test Locally
+```
+REDCAP_URL=https://redcapsurvey.slu.edu/api/
+REDCAP_FAC_TOKEN=your_actual_faculty_token
+REDCAP_RDM_TOKEN=your_actual_rdm_token
+```
+
+**Restart your R session** to load the environment variables.
+
+### 3. Test Locally
 
 ```r
 quarto::quarto_render("weekly_report.qmd")
 ```
 
-### Step 4: Commit and Push
+This will create `weekly_report.html` for preview.
 
-Once everything works locally:
+## Deploy to Posit Connect Cloud
 
-```bash
-git add .
-git commit -m "Initialize renv and setup project"
-git push origin main
-```
+### Generate Manifest
 
-Then proceed with Posit Connect deployment per README.md instructions.
-
-## If renv is Already Initialized
-
-If you're cloning this repo after renv has been set up:
+Before deploying, generate a `manifest.json` to track dependencies:
 
 ```r
-# Restore packages from lockfile
-renv::restore()
+library(rsconnect)
+rsconnect::writeManifest()
 ```
+
+This creates `manifest.json` which Posit Connect uses to install the correct package versions.
+
+### Deploy Options
+
+**Option A: Direct Publish from RStudio**
+
+```r
+library(rsconnect)
+rsconnect::deployDoc("weekly_report.qmd")
+```
+
+**Option B: Git-backed Deployment**
+
+1. Commit `manifest.json` to your repo
+2. Push to GitHub
+3. In Posit Connect → Import from Git
+4. Select `weekly_report.qmd`
+
+### Configure in Posit Connect
+
+1. **Environment Variables**: Add your tokens in the "Vars" tab
+2. **Schedule**: Set to weekly (e.g., `0 8 * * 1` for Mondays at 8am)
+3. **Email**: Configure recipients in the email settings
+
+## Updating
+
+When you update the report:
+
+1. Make changes locally
+2. Test with `quarto::quarto_render("weekly_report.qmd")`
+3. Regenerate manifest: `rsconnect::writeManifest()`
+4. Commit and push (if git-backed) or redeploy
+
+## Troubleshooting
+
+**Missing packages on Connect**: Regenerate manifest.json locally after installing any new packages
+
+**Environment variables not loading**: Verify they're set in Posit Connect UI, not just locally

@@ -18,7 +18,7 @@ imslu.email/
 │   ├── fetch_redcap_data.R  # REDCap API functions
 │   └── utils.R              # Summary/counting functions
 ├── .Renviron.example        # Environment variable template
-├── renv.lock                # R package dependencies
+├── manifest.json            # R package dependencies (for Posit Connect)
 └── README.md
 ```
 
@@ -51,25 +51,13 @@ REDCAP_RDM_TOKEN=your_actual_rdm_token
 
 ### 3. Install Dependencies
 
-Open R/RStudio and restore packages:
+Install required R packages:
 
 ```r
-# Install renv if needed
-install.packages("renv")
-
-# Restore project dependencies
-renv::restore()
+install.packages(c("httr", "dplyr", "ggplot2", "knitr", "quarto", "rsconnect"))
 ```
 
-### 4. Customize the Report
-
-Edit `weekly_report.qmd` and `R/utils.R` to match your actual data structure:
-
-1. Review column names in your REDCap data
-2. Update the counting functions in `R/utils.R`
-3. Modify tables/visualizations in `weekly_report.qmd`
-
-### 5. Test Locally
+### 4. Test Locally
 
 Render the report to verify it works:
 
@@ -79,34 +67,45 @@ quarto::quarto_render("weekly_report.qmd")
 
 This will create `weekly_report.html` for preview.
 
+### 5. Customize the Report (if needed)
+
+The report is already configured for your REDCap data structure. Customization is optional.
+
 ## Posit Connect Cloud Deployment
 
-### 1. Prepare for Deployment
+### 1. Generate Manifest
 
-Ensure all changes are committed and pushed to GitHub:
+Create a `manifest.json` file to track dependencies for Posit Connect:
+
+```r
+library(rsconnect)
+rsconnect::writeManifest()
+```
+
+Commit the manifest:
 
 ```bash
-git add .
-git commit -m "Setup weekly email report"
-git push origin main
+git add manifest.json
+git commit -m "Add manifest for Posit Connect"
+git push
 ```
 
 ### 2. Deploy to Posit Connect
 
-**Option A: Git-backed deployment (recommended)**
-
-1. Log into Posit Connect Cloud
-2. Click "Publish" → "Import from Git"
-3. Connect your GitHub repository
-4. Select `weekly_report.qmd` as the content
-5. Connect will automatically detect dependencies from `renv.lock`
-
-**Option B: Direct publish from RStudio**
+**Option A: Direct publish from RStudio (recommended)**
 
 ```r
 library(rsconnect)
 rsconnect::deployDoc("weekly_report.qmd")
 ```
+
+**Option B: Git-backed deployment**
+
+1. Log into Posit Connect Cloud
+2. Click "Publish" → "Import from Git"
+3. Connect your GitHub repository
+4. Select `weekly_report.qmd` as the content
+5. Connect will use `manifest.json` for dependencies
 
 ### 3. Configure Environment Variables in Connect
 
@@ -140,12 +139,13 @@ To make changes:
 
 1. Edit files locally
 2. Test with `quarto::quarto_render("weekly_report.qmd")`
-3. Commit and push to GitHub
-4. Posit Connect will auto-update (if git-backed) or manually redeploy
+3. Regenerate manifest: `rsconnect::writeManifest()`
+4. Commit and push to GitHub
+5. Posit Connect will auto-update (if git-backed) or manually redeploy
 
 ## Dependencies
 
-Key R packages (managed by renv):
+Key R packages (tracked in manifest.json):
 - httr (REDCap API calls)
 - dplyr (data manipulation)
 - ggplot2 (visualizations)
