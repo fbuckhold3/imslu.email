@@ -273,9 +273,10 @@ get_top_residents_fac_eval <- function(res_data, start_date, top_n = 5) {
                      check.names = FALSE))
   }
 
-  # Get faculty evaluations
+  # Get faculty evaluations - exclude rows with NA record_id
   fac_evals <- res_data[res_data$redcap_repeat_instrument == "Faculty Evaluation" &
-                         !is.na(res_data$fac_eval_date), , drop = FALSE]
+                         !is.na(res_data$fac_eval_date) &
+                         !is.na(res_data$record_id), , drop = FALSE]
 
   if (nrow(fac_evals) == 0) {
     return(data.frame(Resident = character(0),

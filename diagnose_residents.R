@@ -64,7 +64,13 @@ top_5_ids <- head(eval_counts$record_id, 5)
 
 cat("   Top 5 record_ids:\n")
 for (rid in top_5_ids) {
-  name_match <- main_records[main_records$record_id == rid, "name"]
+  if (is.na(rid)) {
+    cat("   - Record NA → INVALID RECORD_ID ✗✗✗\n")
+    cat("     (85 faculty evaluations have NULL/NA record_id - data quality issue!)\n")
+    next
+  }
+
+  name_match <- main_records[main_records$record_id == rid & !is.na(main_records$record_id), "name"]
   has_name <- length(name_match) > 0 && !is.na(name_match) && name_match != ""
 
   if (has_name) {
@@ -104,16 +110,22 @@ cat("\n")
 
 # 5. Recommendation
 cat("5. RECOMMENDATION:\n")
-problematic_ids <- top_5_ids[!top_5_ids %in% main_records$record_id[!is.na(main_records$name) & main_records$name != ""]]
+
+na_count <- sum(is.na(fac_evals$record_id))
+if (na_count > 0) {
+  cat("   CRITICAL ISSUE: ", na_count, " faculty evaluations have NA record_id\n", sep="")
+  cat("   Action needed:\n")
+  cat("   - Check REDCap Faculty Evaluation form submissions\n")
+  cat("   - These evaluations are missing the resident identifier\n")
+  cat("   - Fix the form or re-submit these evaluations with proper record_id\n")
+  cat("   - Until fixed, these will show as 'Record_NA' in reports\n\n")
+}
+
+problematic_ids <- top_5_ids[!is.na(top_5_ids) & !top_5_ids %in% main_records$record_id[!is.na(main_records$name) & main_records$name != ""]]
 
 if (length(problematic_ids) > 0) {
-  cat("   Record IDs needing attention:", paste(problematic_ids, collapse = ", "), "\n")
+  cat("   Additional record IDs needing attention:", paste(problematic_ids, collapse = ", "), "\n")
   cat("   Action needed: Add 'name' values to these records in REDCap\n")
-  cat("   - Go to the main resident_data form for these record_ids\n")
-  cat("   - Fill in the 'name' field\n")
-  cat("   - Re-fetch data to see names appear in report\n")
-} else {
-  cat("   All top residents have names - issue may be elsewhere\n")
 }
 
 cat("\n=== END OF DIAGNOSTIC REPORT ===\n")
