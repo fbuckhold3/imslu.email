@@ -89,9 +89,17 @@ fetch_resident_data <- function(url = Sys.getenv("REDCAP_URL"),
     return(data.frame())
   }
 
-  # Filter out archived residents (res_archive != "Yes") if column exists
-  if ("res_archive" %in% names(res_data)) {
-    res_data <- res_data[res_data$res_archive != "Yes", , drop = FALSE]
+  # Filter out archived residents
+  # Note: res_archive is only set on the main form row, not repeating instruments
+  # So we need to identify archived record_ids and filter ALL rows for those IDs
+  if ("res_archive" %in% names(res_data) && "record_id" %in% names(res_data)) {
+    # Find record_ids where res_archive == "Yes" (on any row for that record)
+    archived_ids <- unique(res_data$record_id[res_data$res_archive == "Yes" & !is.na(res_data$res_archive)])
+
+    # Filter out ALL rows for archived record_ids
+    if (length(archived_ids) > 0) {
+      res_data <- res_data[!res_data$record_id %in% archived_ids, , drop = FALSE]
+    }
   }
 
   return(res_data)
