@@ -17,6 +17,7 @@ library(httr)
 library(dplyr)
 library(knitr)
 library(ggplot2)
+library(htmltools)
 
 # Source helper functions
 source("R/fetch_redcap_data.R")
@@ -60,20 +61,24 @@ total_assessments_4wk <- nrow(res_data[res_data$redcap_repeat_instrument == "Ass
 
 *Since `r format(academic_year_start, "%B %d, %Y")`*
 
+```{r metrics-year, results='asis', echo=FALSE}
+htmltools::HTML(sprintf('
 <div style="display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap;">
   <div style="text-align: center; padding: 20px; background: #f0f9ff; border-radius: 10px; min-width: 200px; margin: 10px;">
-    <div style="font-size: 48px; font-weight: bold; color: #0369a1;">`r round(avg_evals_year, 1)`</div>
+    <div style="font-size: 48px; font-weight: bold; color: #0369a1;">%.1f</div>
     <div style="font-size: 14px; color: #64748b;">Avg Evaluations/Resident</div>
   </div>
   <div style="text-align: center; padding: 20px; background: #f0fdf4; border-radius: 10px; min-width: 200px; margin: 10px;">
-    <div style="font-size: 48px; font-weight: bold; color: #15803d;">`r total_assessments_year`</div>
+    <div style="font-size: 48px; font-weight: bold; color: #15803d;">%d</div>
     <div style="font-size: 14px; color: #64748b;">Total Assessments</div>
   </div>
   <div style="text-align: center; padding: 20px; background: #fef3c7; border-radius: 10px; min-width: 200px; margin: 10px;">
-    <div style="font-size: 48px; font-weight: bold; color: #b45309;">`r round(avg_conf_year, 1)`</div>
+    <div style="font-size: 48px; font-weight: bold; color: #b45309;">%.1f</div>
     <div style="font-size: 14px; color: #64748b;">Avg Conferences/Resident</div>
   </div>
 </div>
+', avg_evals_year, total_assessments_year, avg_conf_year))
+```
 
 ---
 
@@ -81,20 +86,24 @@ total_assessments_4wk <- nrow(res_data[res_data$redcap_repeat_instrument == "Ass
 
 *Last 28 days*
 
+```{r metrics-4wk, results='asis', echo=FALSE}
+htmltools::HTML(sprintf('
 <div style="display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap;">
   <div style="text-align: center; padding: 20px; background: #f0f9ff; border-radius: 10px; min-width: 200px; margin: 10px;">
-    <div style="font-size: 48px; font-weight: bold; color: #0369a1;">`r round(avg_evals_4wk, 1)`</div>
+    <div style="font-size: 48px; font-weight: bold; color: #0369a1;">%.1f</div>
     <div style="font-size: 14px; color: #64748b;">Avg Evaluations/Resident</div>
   </div>
   <div style="text-align: center; padding: 20px; background: #f0fdf4; border-radius: 10px; min-width: 200px; margin: 10px;">
-    <div style="font-size: 48px; font-weight: bold; color: #15803d;">`r total_assessments_4wk`</div>
+    <div style="font-size: 48px; font-weight: bold; color: #15803d;">%d</div>
     <div style="font-size: 14px; color: #64748b;">Total Assessments</div>
   </div>
   <div style="text-align: center; padding: 20px; background: #fef3c7; border-radius: 10px; min-width: 200px; margin: 10px;">
-    <div style="font-size: 48px; font-weight: bold; color: #b45309;">`r round(avg_conf_4wk, 1)`</div>
+    <div style="font-size: 48px; font-weight: bold; color: #b45309;">%.1f</div>
     <div style="font-size: 14px; color: #64748b;">Avg Conferences/Resident</div>
   </div>
 </div>
+', avg_evals_4wk, total_assessments_4wk, avg_conf_4wk))
+```
 
 ---
 
