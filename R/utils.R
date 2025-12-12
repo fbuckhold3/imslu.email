@@ -355,3 +355,84 @@ count_questions_by_rotation <- function(res_data, start_date) {
 
   return(as.data.frame(rotation_counts))
 }
+
+
+#' Diagnostic function to identify what fields are filled in "Other" assessments
+#'
+#' @param res_data Resident data from REDCap
+#' @param start_date Start date for filtering (optional, defaults to academic year start)
+#' @return Data frame showing which ass_ fields have data in "Other" assessments
+diagnose_other_assessments <- function(res_data, start_date = NULL) {
+  if (is.null(start_date)) {
+    start_date <- get_academic_year_start()
+  }
+
+  # Handle empty input
+  if (nrow(res_data) == 0) {
+    return(data.frame(record_id = character(0),
+                     ass_date = character(0),
+                     assessment_type = character(0),
+                     filled_fields = character(0)))
+  }
+
+  # Filter to Assessment records
+  assessments <- res_data[res_data$redcap_repeat_instrument == "Assessment" &
+                           !is.na(res_data$ass_date), , drop = FALSE]
+
+  if (nrow(assessments) == 0) {
+    return(data.frame(record_id = character(0),
+                     ass_date = character(0),
+                     assessment_type = character(0),
+                     filled_fields = character(0)))
+  }
+
+  # Convert date if needed
+  if (!inherits(assessments$ass_date, "Date")) {
+    assessments$ass_date <- as.Date(assessments$ass_date)
+  }
+
+  # Filter by date
+  assessments <- assessments[assessments$ass_date >= start_date, , drop = FALSE]
+
+  if (nrow(assessments) == 0) {
+    return(data.frame(record_id = character(0),
+                     ass_date = character(0),
+                     assessment_type = character(0),
+                     filled_fields = character(0)))
+  }
+
+  # Add assessment type
+  assessments <- add_assessment_type(assessments)
+
+  # Filter to only "Other" assessments
+  others <- assessments[assessments$assessment_type == "Other", , drop = FALSE]
+
+  if (nrow(others) == 0) {
+    message("No 'Other' assessments found!")
+    return(data.frame(record_id = character(0),
+                     ass_date = character(0),
+                     assessment_type = character(0),
+                     filled_fields = character(0)))
+  }
+
+  # For each "Other" assessment, find which ass_ fields have data
+  result_list <- lapply(1:nrow(others), function(i) {
+    row <- others[i, ]
+
+    # Get all ass_ fields
+    ass_cols <- grep("^ass_", names(row), value = TRUE)
+
+    # Find which ones have data (not NA and not empty string)
+    filled <- ass_cols[!is.na(row[ass_cols]) & row[ass_cols] != ""]
+
+    data.frame(
+      record_id = row$record_id,
+      ass_date = as.character(row$ass_date),
+      assessment_type = row$assessment_type,
+      filled_fields = paste(filled, collapse = ", ")
+    )
+  })
+
+  result <- do.call(rbind, result_list)
+  return(result)
+}
