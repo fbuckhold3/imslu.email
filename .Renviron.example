@@ -1,0 +1,7 @@
+# REDCap API Configuration
+# Copy this file to .Renviron and fill in your actual tokens
+# .Renviron is gitignored and will not be committed
+
+REDCAP_URL=https://redcapsurvey.slu.edu/api/
+REDCAP_FAC_TOKEN=your_faculty_token_here
+REDCAP_RDM_TOKEN=your_rdm_token_here

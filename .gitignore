@@ -1,0 +1,31 @@
+# R environment
+.Renviron
+.RData
+.Rhistory
+
+# renv
+renv/library/
+renv/local/
+renv/staging/
+
+# Quarto
+.quarto/
+*_files/
+*_cache/
+
+# IDE
+.Rproj.user
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Sensitive data
+*.env
+config/tokens.R
+
+# Output files (if generating locally)
+*.html
+*.pdf

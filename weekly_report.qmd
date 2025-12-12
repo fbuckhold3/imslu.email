@@ -1,0 +1,113 @@
+---
+title: "Weekly Faculty Evaluation & Attendance Report"
+format:
+  html:
+    toc: false
+    theme: default
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r setup}
+library(httr)
+library(dplyr)
+library(knitr)
+library(ggplot2)
+
+# Source helper functions
+source("R/fetch_redcap_data.R")
+source("R/utils.R")
+```
+
+```{r fetch-data}
+# Fetch data from both REDCap databases
+fac_data <- fetch_faculty_data()
+res_data <- fetch_resident_data()
+```
+
+## Summary
+
+This report provides a weekly summary of evaluation collection and attendance tracking broken down by specialty, provider, and resident.
+
+---
+
+### Evaluations Collected
+
+#### By Specialty
+
+```{r evals-by-specialty}
+# TODO: Customize based on your actual data structure
+# specialty_counts <- count_by_specialty(res_data)
+# kable(specialty_counts)
+
+# Placeholder table
+kable(data.frame(
+  Specialty = c("Example 1", "Example 2"),
+  Evaluations = c(0, 0)
+))
+```
+
+#### By Provider
+
+```{r evals-by-provider}
+# TODO: Customize based on your actual data structure
+# provider_counts <- count_by_provider(res_data)
+# kable(provider_counts)
+
+# Placeholder table
+kable(data.frame(
+  Provider = c("Example Provider"),
+  Evaluations = c(0)
+))
+```
+
+#### By Resident
+
+```{r evals-by-resident}
+# TODO: Customize based on your actual data structure
+# resident_counts <- count_by_resident(res_data)
+# kable(resident_counts)
+
+# Placeholder table
+kable(data.frame(
+  Resident = c("Example Resident"),
+  Evaluations = c(0)
+))
+```
+
+---
+
+### Attendance Records
+
+```{r attendance}
+# TODO: Customize based on your actual data structure
+# attendance_counts <- count_attendance(res_data)
+# kable(attendance_counts)
+
+# Placeholder table
+kable(data.frame(
+  Category = c("Example Category"),
+  Count = c(0)
+))
+```
+
+---
+
+### Quick Links
+
+**For Faculty:**
+
+- [Submit Evaluation](https://redcapsurvey.slu.edu/)
+- [Record Attendance](https://redcapsurvey.slu.edu/)
+
+**For Administrators:**
+
+- [View All Evaluations](https://redcapsurvey.slu.edu/)
+- [Manage Faculty](https://redcapsurvey.slu.edu/)
+
+---
+
+*Report generated on: `r format(Sys.Date(), "%B %d, %Y")`*
