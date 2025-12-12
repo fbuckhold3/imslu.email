@@ -2,7 +2,7 @@
 #'
 #' @param url REDCap API URL
 #' @param token Faculty database API token
-#' @return Data frame with faculty demographics
+#' @return Data frame with faculty demographics (fac_name, fac_email, fac_clin, fac_div)
 fetch_faculty_data <- function(url = Sys.getenv("REDCAP_URL"),
                                 token = Sys.getenv("REDCAP_FAC_TOKEN")) {
 
@@ -14,7 +14,7 @@ fetch_faculty_data <- function(url = Sys.getenv("REDCAP_URL"),
     type = 'flat',
     csvDelimiter = '',
     'forms[0]' = 'faculty_demographics',
-    rawOrLabel = 'raw',
+    rawOrLabel = 'label',
     rawOrLabelHeaders = 'raw',
     exportCheckboxLabel = 'false',
     exportSurveyFields = 'false',
@@ -25,8 +25,11 @@ fetch_faculty_data <- function(url = Sys.getenv("REDCAP_URL"),
   response <- httr::POST(url, body = formData, encode = "form")
   fac_data <- httr::content(response, encoding = "UTF-8")
 
-  # Filter out archived records
-  fac_data <- fac_data[fac_data$archive != 1, ]
+  # Filter out archived records (archived == "No")
+  fac_data <- fac_data[fac_data$archived == "No", ]
+
+  # Select only needed columns
+  fac_data <- fac_data[, c("fac_name", "fac_email", "fac_clin", "fac_div")]
 
   return(fac_data)
 }
@@ -36,7 +39,7 @@ fetch_faculty_data <- function(url = Sys.getenv("REDCAP_URL"),
 #'
 #' @param url REDCap API URL
 #' @param token RDM database API token
-#' @return Data frame with resident data and evaluations
+#' @return Data frame with resident data and evaluations (includes assessments and faculty evaluations)
 fetch_resident_data <- function(url = Sys.getenv("REDCAP_URL"),
                                  token = Sys.getenv("REDCAP_RDM_TOKEN")) {
 
@@ -52,7 +55,7 @@ fetch_resident_data <- function(url = Sys.getenv("REDCAP_URL"),
     'forms[1]' = 'assessment',
     'forms[2]' = 'faculty_evaluation',
     'forms[3]' = 'questions',
-    rawOrLabel = 'raw',
+    rawOrLabel = 'label',
     rawOrLabelHeaders = 'raw',
     exportCheckboxLabel = 'false',
     exportSurveyFields = 'false',
@@ -63,8 +66,8 @@ fetch_resident_data <- function(url = Sys.getenv("REDCAP_URL"),
   response <- httr::POST(url, body = formData, encode = "form")
   res_data <- httr::content(response, encoding = "UTF-8")
 
-  # Filter out archived records
-  res_data <- res_data[res_data$archive != 1, ]
+  # Filter out archived residents (res_archive != "Yes")
+  res_data <- res_data[res_data$res_archive != "Yes", ]
 
   return(res_data)
 }

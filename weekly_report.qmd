@@ -30,84 +30,68 @@ res_data <- fetch_resident_data()
 
 ## Summary
 
-This report provides a weekly summary of evaluation collection and attendance tracking broken down by specialty, provider, and resident.
+This report provides a weekly summary of resident evaluation collection and faculty evaluation completion, broken down by specialty, provider, and resident.
+
+**Data pulled from:** REDCap RDM and Faculty databases
+**Active residents only** (archived residents excluded)
 
 ---
 
-### Evaluations Collected
+### Assessment Evaluations Collected
+
+Assessment evaluations are completed by faculty for residents rotating through various specialties.
 
 #### By Specialty
 
 ```{r evals-by-specialty}
-# TODO: Customize based on your actual data structure
-# specialty_counts <- count_by_specialty(res_data)
-# kable(specialty_counts)
-
-# Placeholder table
-kable(data.frame(
-  Specialty = c("Example 1", "Example 2"),
-  Evaluations = c(0, 0)
-))
+specialty_counts <- count_by_specialty(res_data)
+kable(specialty_counts)
 ```
 
-#### By Provider
+#### By Faculty Provider
 
 ```{r evals-by-provider}
-# TODO: Customize based on your actual data structure
-# provider_counts <- count_by_provider(res_data)
-# kable(provider_counts)
-
-# Placeholder table
-kable(data.frame(
-  Provider = c("Example Provider"),
-  Evaluations = c(0)
-))
+provider_counts <- count_by_provider(res_data)
+kable(provider_counts)
 ```
 
 #### By Resident
 
 ```{r evals-by-resident}
-# TODO: Customize based on your actual data structure
-# resident_counts <- count_by_resident(res_data)
-# kable(resident_counts)
-
-# Placeholder table
-kable(data.frame(
-  Resident = c("Example Resident"),
-  Evaluations = c(0)
-))
+resident_counts <- count_by_resident(res_data)
+kable(resident_counts)
 ```
 
 ---
 
-### Attendance Records
+### Faculty Evaluations Completed by Residents
 
-```{r attendance}
-# TODO: Customize based on your actual data structure
-# attendance_counts <- count_attendance(res_data)
-# kable(attendance_counts)
+Faculty evaluations are completed by residents to evaluate the faculty they worked with during rotations.
 
-# Placeholder table
-kable(data.frame(
-  Category = c("Example Category"),
-  Count = c(0)
-))
+```{r faculty-evals}
+fac_eval_counts <- count_faculty_evals(res_data)
+kable(fac_eval_counts)
 ```
 
 ---
 
 ### Quick Links
 
-**For Faculty:**
+**For Faculty to Submit Evaluations:**
 
-- [Submit Evaluation](https://redcapsurvey.slu.edu/)
-- [Record Attendance](https://redcapsurvey.slu.edu/)
+- [Submit Resident Assessment](https://redcapsurvey.slu.edu/) *(TODO: Add specific REDCap survey link)*
+
+**For Residents:**
+
+- [Submit Faculty Evaluation](https://redcapsurvey.slu.edu/) *(TODO: Add specific REDCap survey link)*
 
 **For Administrators:**
 
-- [View All Evaluations](https://redcapsurvey.slu.edu/)
-- [Manage Faculty](https://redcapsurvey.slu.edu/)
+- [View RDM Database](https://redcapsurvey.slu.edu/) *(TODO: Add specific project link)*
+- [View Faculty Database](https://redcapsurvey.slu.edu/) *(TODO: Add specific project link)*
 
 ---
 
 *Report generated on: `r format(Sys.Date(), "%B %d, %Y")`*
+
+*Questions or issues? Contact your program administrator.*
