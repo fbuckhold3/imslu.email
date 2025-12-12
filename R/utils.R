@@ -436,3 +436,125 @@ diagnose_other_assessments <- function(res_data, start_date = NULL) {
   result <- do.call(rbind, result_list)
   return(result)
 }
+
+
+#' Calculate average evaluations completed per resident
+#'
+#' @param res_data Resident data from REDCap
+#' @param start_date Start date for filtering
+#' @return Average number of evaluations per resident
+get_avg_evaluations_per_resident <- function(res_data, start_date) {
+  # Handle empty input
+  if (nrow(res_data) == 0) {
+    return(0)
+  }
+
+  assessments <- res_data[res_data$redcap_repeat_instrument == "Assessment" &
+                           !is.na(res_data$ass_date), , drop = FALSE]
+
+  if (nrow(assessments) == 0) {
+    return(0)
+  }
+
+  if (!inherits(assessments$ass_date, "Date")) {
+    assessments$ass_date <- as.Date(assessments$ass_date)
+  }
+
+  assessments <- assessments[assessments$ass_date >= start_date, , drop = FALSE]
+
+  if (nrow(assessments) == 0) {
+    return(0)
+  }
+
+  # Count unique residents (record_ids)
+  unique_residents <- length(unique(assessments$record_id))
+
+  if (unique_residents == 0) {
+    return(0)
+  }
+
+  # Return average
+  return(nrow(assessments) / unique_residents)
+}
+
+
+#' Calculate average conferences attended per resident
+#'
+#' @param res_data Resident data from REDCap
+#' @param start_date Start date for filtering
+#' @return Average number of conferences attended per resident
+get_avg_conferences_per_resident <- function(res_data, start_date) {
+  # Handle empty input
+  if (nrow(res_data) == 0) {
+    return(0)
+  }
+
+  # Assuming conferences are tracked in the Questions instrument or a specific field
+  # Adjust this based on actual data structure
+  conferences <- res_data[res_data$redcap_repeat_instrument == "Questions" &
+                           !is.na(res_data$q_date), , drop = FALSE]
+
+  if (nrow(conferences) == 0) {
+    return(0)
+  }
+
+  if (!inherits(conferences$q_date, "Date")) {
+    conferences$q_date <- as.Date(conferences$q_date)
+  }
+
+  conferences <- conferences[conferences$q_date >= start_date, , drop = FALSE]
+
+  if (nrow(conferences) == 0) {
+    return(0)
+  }
+
+  # Count unique residents
+  unique_residents <- length(unique(conferences$record_id))
+
+  if (unique_residents == 0) {
+    return(0)
+  }
+
+  # Return average
+  return(nrow(conferences) / unique_residents)
+}
+
+
+#' Get assessment counts by specialty for plotting
+#'
+#' @param res_data Resident data from REDCap
+#' @param start_date Start date for filtering
+#' @return Data frame with specialty and count
+get_assessments_by_specialty_for_plot <- function(res_data, start_date) {
+  # Handle empty input
+  if (nrow(res_data) == 0) {
+    return(data.frame(Specialty = character(0), Count = integer(0)))
+  }
+
+  assessments <- res_data[res_data$redcap_repeat_instrument == "Assessment" &
+                           !is.na(res_data$ass_date), , drop = FALSE]
+
+  if (nrow(assessments) == 0) {
+    return(data.frame(Specialty = character(0), Count = integer(0)))
+  }
+
+  if (!inherits(assessments$ass_date, "Date")) {
+    assessments$ass_date <- as.Date(assessments$ass_date)
+  }
+
+  assessments <- assessments[assessments$ass_date >= start_date, , drop = FALSE]
+
+  if (nrow(assessments) == 0) {
+    return(data.frame(Specialty = character(0), Count = integer(0)))
+  }
+
+  # Count by specialty
+  specialty_counts <- assessments %>%
+    dplyr::group_by(ass_specialty) %>%
+    dplyr::summarize(Count = dplyr::n(), .groups = 'drop') %>%
+    dplyr::arrange(dplyr::desc(Count))
+
+  colnames(specialty_counts) <- c("Specialty", "Count")
+
+  return(as.data.frame(specialty_counts))
+}

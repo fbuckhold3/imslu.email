@@ -4,7 +4,7 @@ format:
   html:
     toc: true
     toc-depth: 2
-    theme: default
+    theme: cosmo
     embed-resources: true
 execute:
   echo: false
@@ -21,6 +21,15 @@ library(ggplot2)
 # Source helper functions
 source("R/fetch_redcap_data.R")
 source("R/utils.R")
+
+# Set ggplot theme for consistent styling
+theme_set(theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12, color = "grey40"),
+    axis.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank()
+  ))
 ```
 
 ```{r fetch-data}
@@ -31,116 +40,229 @@ res_data <- fetch_resident_data()
 # Calculate time periods
 academic_year_start <- get_academic_year_start()
 four_weeks_ago <- Sys.Date() - 28
+
+# Calculate key metrics
+avg_evals_year <- get_avg_evaluations_per_resident(res_data, academic_year_start)
+avg_evals_4wk <- get_avg_evaluations_per_resident(res_data, four_weeks_ago)
+avg_conf_year <- get_avg_conferences_per_resident(res_data, academic_year_start)
+avg_conf_4wk <- get_avg_conferences_per_resident(res_data, four_weeks_ago)
+
+# Total counts
+total_assessments_year <- nrow(res_data[res_data$redcap_repeat_instrument == "Assessment" &
+                                        !is.na(res_data$ass_date) &
+                                        as.Date(res_data$ass_date) >= academic_year_start, ])
+total_assessments_4wk <- nrow(res_data[res_data$redcap_repeat_instrument == "Assessment" &
+                                       !is.na(res_data$ass_date) &
+                                       as.Date(res_data$ass_date) >= four_weeks_ago, ])
 ```
 
-## Summary
+## 📊 Key Metrics
 
-This report provides evaluation metrics for the current academic year (`r format(academic_year_start, "%B %d, %Y")` to `r format(academic_year_start + 364, "%B %d, %Y")`) and the last 4 weeks.
+::: {.panel-tabset}
 
-**Data Source:** REDCap RDM and Faculty databases
-**Active Residents Only** (archived residents excluded)
+### Academic Year
+
+<div style="display: flex; justify-content: space-around; margin: 20px 0;">
+  <div style="text-align: center; padding: 20px; background: #f0f9ff; border-radius: 10px; min-width: 200px;">
+    <div style="font-size: 48px; font-weight: bold; color: #0369a1;">`r round(avg_evals_year, 1)`</div>
+    <div style="font-size: 14px; color: #64748b;">Avg Evaluations/Resident</div>
+  </div>
+  <div style="text-align: center; padding: 20px; background: #f0fdf4; border-radius: 10px; min-width: 200px;">
+    <div style="font-size: 48px; font-weight: bold; color: #15803d;">`r total_assessments_year`</div>
+    <div style="font-size: 14px; color: #64748b;">Total Assessments</div>
+  </div>
+  <div style="text-align: center; padding: 20px; background: #fef3c7; border-radius: 10px; min-width: 200px;">
+    <div style="font-size: 48px; font-weight: bold; color: #b45309;">`r round(avg_conf_year, 1)`</div>
+    <div style="font-size: 14px; color: #64748b;">Avg Conferences/Resident</div>
+  </div>
+</div>
+
+*Since `r format(academic_year_start, "%B %d, %Y")`*
+
+### Last 4 Weeks
+
+<div style="display: flex; justify-content: space-around; margin: 20px 0;">
+  <div style="text-align: center; padding: 20px; background: #f0f9ff; border-radius: 10px; min-width: 200px;">
+    <div style="font-size: 48px; font-weight: bold; color: #0369a1;">`r round(avg_evals_4wk, 1)`</div>
+    <div style="font-size: 14px; color: #64748b;">Avg Evaluations/Resident</div>
+  </div>
+  <div style="text-align: center; padding: 20px; background: #f0fdf4; border-radius: 10px; min-width: 200px;">
+    <div style="font-size: 48px; font-weight: bold; color: #15803d;">`r total_assessments_4wk`</div>
+    <div style="font-size: 14px; color: #64748b;">Total Assessments</div>
+  </div>
+  <div style="text-align: center; padding: 20px; background: #fef3c7; border-radius: 10px; min-width: 200px;">
+    <div style="font-size: 48px; font-weight: bold; color: #b45309;">`r round(avg_conf_4wk, 1)`</div>
+    <div style="font-size: 14px; color: #64748b;">Avg Conferences/Resident</div>
+  </div>
+</div>
+
+*Last 28 days*
+
+:::
 
 ---
 
-## Assessment Evaluations by Faculty
+## 📈 Assessments by Specialty
 
-*Assessments categorized by type: Continuity Clinic, Clinic Day, Consults, Intern Inpatient, Resident Inpatient, Bridge, and Observational*
+::: {.panel-tabset}
 
-### Academic Year To Date
+### Academic Year
 
-#### Total by Assessment Type
+```{r specialty-year, fig.width=10, fig.height=6}
+year_specialty <- get_assessments_by_specialty_for_plot(res_data, academic_year_start)
 
-```{r assess-year-total}
-year_totals <- count_assessments_by_type(res_data, academic_year_start)
-kable(year_totals)
-```
-
-#### By Type and Specialty
-
-```{r assess-year-detail}
-year_detail <- count_assessments_by_type_specialty(res_data, academic_year_start, "Count")
-kable(year_detail)
+if (nrow(year_specialty) > 0) {
+  ggplot(year_specialty, aes(x = reorder(Specialty, Count), y = Count, fill = Count)) +
+    geom_col() +
+    geom_text(aes(label = Count), hjust = -0.2, size = 4) +
+    coord_flip() +
+    scale_fill_gradient(low = "#93c5fd", high = "#1e40af") +
+    labs(
+      title = "Assessments by Specialty",
+      subtitle = paste("Academic Year:", format(academic_year_start, "%b %Y"), "- Present"),
+      x = NULL,
+      y = "Number of Assessments"
+    ) +
+    theme(legend.position = "none") +
+    expand_limits(y = max(year_specialty$Count) * 1.1)
+} else {
+  plot.new()
+  text(0.5, 0.5, "No assessment data available", cex = 1.5, col = "gray50")
+}
 ```
 
 ### Last 4 Weeks
 
-#### Total by Assessment Type
+```{r specialty-4wk, fig.width=10, fig.height=6}
+fourwk_specialty <- get_assessments_by_specialty_for_plot(res_data, four_weeks_ago)
 
-```{r assess-4wk-total}
-fourwk_totals <- count_assessments_by_type(res_data, four_weeks_ago)
-kable(fourwk_totals)
+if (nrow(fourwk_specialty) > 0) {
+  ggplot(fourwk_specialty, aes(x = reorder(Specialty, Count), y = Count, fill = Count)) +
+    geom_col() +
+    geom_text(aes(label = Count), hjust = -0.2, size = 4) +
+    coord_flip() +
+    scale_fill_gradient(low = "#86efac", high = "#15803d") +
+    labs(
+      title = "Assessments by Specialty",
+      subtitle = "Last 4 Weeks",
+      x = NULL,
+      y = "Number of Assessments"
+    ) +
+    theme(legend.position = "none") +
+    expand_limits(y = max(fourwk_specialty$Count) * 1.1)
+} else {
+  plot.new()
+  text(0.5, 0.5, "No assessment data available", cex = 1.5, col = "gray50")
+}
 ```
 
-#### By Type and Specialty
-
-```{r assess-4wk-detail}
-fourwk_detail <- count_assessments_by_type_specialty(res_data, four_weeks_ago, "Count")
-kable(fourwk_detail)
-```
+:::
 
 ---
 
-## 🎉 Shout-Outs: Top Faculty
+## 🎉 Top Faculty Contributors
+
+::: {.panel-tabset}
 
 ### Academic Year Champions
 
 ```{r top-faculty-year}
 top_fac_year <- get_top_faculty(res_data, academic_year_start, top_n = 5)
-kable(top_fac_year)
+kable(top_fac_year, align = c('l', 'r'))
 ```
 
 ### Last 4 Weeks MVP
 
 ```{r top-faculty-4wk}
 top_fac_4wk <- get_top_faculty(res_data, four_weeks_ago, top_n = 5)
-kable(top_fac_4wk)
+kable(top_fac_4wk, align = c('l', 'r'))
 ```
+
+:::
 
 ---
 
-## Faculty Evaluations by Residents
+## 🏆 Top Residents - Faculty Evaluations
 
-Residents evaluate faculty after working with them on rotations.
+::: {.panel-tabset}
 
-### 🎉 Shout-Outs: Top Residents
-
-#### Academic Year Champions
+### Academic Year Champions
 
 ```{r top-res-year}
 top_res_year <- get_top_residents_fac_eval(res_data, academic_year_start, top_n = 5)
-kable(top_res_year)
+kable(top_res_year, align = c('l', 'r'))
 ```
 
-#### Last 4 Weeks MVP
+### Last 4 Weeks MVP
 
 ```{r top-res-4wk}
 top_res_4wk <- get_top_residents_fac_eval(res_data, four_weeks_ago, top_n = 5)
-kable(top_res_4wk)
+kable(top_res_4wk, align = c('l', 'r'))
 ```
+
+:::
 
 ---
 
-## Questions Submitted by Rotation
+## 💬 Questions by Rotation
 
-Residents submit questions during rotations for noon conference discussions.
+::: {.panel-tabset}
 
 ### Academic Year
 
-```{r questions-year}
+```{r questions-year, fig.width=10, fig.height=6}
 q_year <- count_questions_by_rotation(res_data, academic_year_start)
-kable(q_year)
+
+if (nrow(q_year) > 0) {
+  ggplot(q_year, aes(x = reorder(Rotation, `Question Count`), y = `Question Count`, fill = `Question Count`)) +
+    geom_col() +
+    geom_text(aes(label = `Question Count`), hjust = -0.2, size = 4) +
+    coord_flip() +
+    scale_fill_gradient(low = "#fde68a", high = "#b45309") +
+    labs(
+      title = "Questions Submitted by Rotation",
+      subtitle = paste("Academic Year:", format(academic_year_start, "%b %Y"), "- Present"),
+      x = NULL,
+      y = "Number of Questions"
+    ) +
+    theme(legend.position = "none") +
+    expand_limits(y = max(q_year$`Question Count`) * 1.1)
+} else {
+  plot.new()
+  text(0.5, 0.5, "No question data available", cex = 1.5, col = "gray50")
+}
 ```
 
 ### Last 4 Weeks
 
-```{r questions-4wk}
+```{r questions-4wk, fig.width=10, fig.height=6}
 q_4wk <- count_questions_by_rotation(res_data, four_weeks_ago)
-kable(q_4wk)
+
+if (nrow(q_4wk) > 0) {
+  ggplot(q_4wk, aes(x = reorder(Rotation, `Question Count`), y = `Question Count`, fill = `Question Count`)) +
+    geom_col() +
+    geom_text(aes(label = `Question Count`), hjust = -0.2, size = 4) +
+    coord_flip() +
+    scale_fill_gradient(low = "#fde68a", high = "#b45309") +
+    labs(
+      title = "Questions Submitted by Rotation",
+      subtitle = "Last 4 Weeks",
+      x = NULL,
+      y = "Number of Questions"
+    ) +
+    theme(legend.position = "none") +
+    expand_limits(y = max(q_4wk$`Question Count`) * 1.1)
+} else {
+  plot.new()
+  text(0.5, 0.5, "No question data available", cex = 1.5, col = "gray50")
+}
 ```
+
+:::
 
 ---
 
-## Quick Links
+## 🔗 Quick Links
 
 ### For Faculty
 
@@ -149,16 +271,21 @@ kable(q_4wk)
 ### For Residents
 
 📝 [Submit Faculty Evaluation](https://fbuckhold3-imslu-facultyeval.share.connect.posit.cloud)
+
 📝 [Submit Attendance at Noon Conference](https://fbuckhold3-imslu-at-noon.share.connect.posit.cloud)
 
 ### For Administrators
 
 📊 [View RDM Database](https://redcapsurvey.slu.edu/)
+
 📊 [View Faculty Database](https://redcapsurvey.slu.edu/)
 
 ---
 
+<div style="text-align: center; color: #64748b; font-size: 12px; margin-top: 40px;">
 *Report generated on: `r format(Sys.Date(), "%B %d, %Y")`*
+
 *Academic Year: `r format(academic_year_start, "%Y")` - `r format(academic_year_start + 364, "%Y")`*
 
 *Questions or issues? Contact your program administrator.*
+</div>
