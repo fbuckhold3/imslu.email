@@ -116,12 +116,13 @@ fetch_resident_data <- function(url = Sys.getenv("REDCAP_URL"),
   # Filter out Faculty Evaluation records with NA record_id
   # These are typically from old data merges before the academic year
   if ("redcap_repeat_instrument" %in% names(res_data) && "record_id" %in% names(res_data)) {
-    # Keep row if it's NOT a Faculty Evaluation, OR if it IS a Faculty Evaluation with valid record_id
-    res_data <- res_data[
-      res_data$redcap_repeat_instrument != "Faculty Evaluation" |
-      !is.na(res_data$record_id),
-      , drop = FALSE
-    ]
+    # Identify Faculty Evaluation rows with NA record_id
+    is_fac_eval <- !is.na(res_data$redcap_repeat_instrument) & res_data$redcap_repeat_instrument == "Faculty Evaluation"
+    has_na_record <- is.na(res_data$record_id)
+
+    # Remove rows that are BOTH Faculty Evaluation AND have NA record_id
+    bad_rows <- is_fac_eval & has_na_record
+    res_data <- res_data[!bad_rows, , drop = FALSE]
   }
 
   return(res_data)
