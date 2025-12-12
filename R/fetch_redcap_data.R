@@ -23,7 +23,10 @@ fetch_faculty_data <- function(url = Sys.getenv("REDCAP_URL"),
   )
 
   response <- httr::POST(url, body = formData, encode = "form")
-  fac_data <- httr::content(response, encoding = "UTF-8")
+
+  # Parse CSV response
+  fac_data <- read.csv(text = httr::content(response, "text", encoding = "UTF-8"),
+                       stringsAsFactors = FALSE)
 
   # Filter out archived records (archived == "No")
   fac_data <- fac_data[fac_data$archived == "No", ]
@@ -64,7 +67,10 @@ fetch_resident_data <- function(url = Sys.getenv("REDCAP_URL"),
   )
 
   response <- httr::POST(url, body = formData, encode = "form")
-  res_data <- httr::content(response, encoding = "UTF-8")
+
+  # Parse CSV response
+  res_data <- read.csv(text = httr::content(response, "text", encoding = "UTF-8"),
+                       stringsAsFactors = FALSE)
 
   # Filter out archived residents (res_archive != "Yes")
   res_data <- res_data[res_data$res_archive != "Yes", ]
