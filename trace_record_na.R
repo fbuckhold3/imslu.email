@@ -15,14 +15,23 @@ fac_all <- res_data[!is.na(res_data$redcap_repeat_instrument) &
 cat("  Total Faculty Evals:", nrow(fac_all), "\n")
 cat("  Unique record_ids:", length(unique(fac_all$record_id)), "\n\n")
 
-# Step 2: Apply the exact filters from the function
-cat("STEP 2: Apply filters from get_top_residents_fac_eval()\n")
-fac_evals <- res_data[!is.na(res_data$redcap_repeat_instrument) &
-                       res_data$redcap_repeat_instrument == "Faculty Evaluation" &
-                       !is.na(res_data$fac_eval_date) &
-                       !is.na(res_data$record_id) &
-                       res_data$record_id != "" &
-                       res_data$record_id != "NA", , drop = FALSE]
+# Step 2: Apply the exact filters from the function (NEW logic)
+cat("STEP 2: Apply filters from get_top_residents_fac_eval() [NEW LOGIC]\n")
+
+# Build filter step by step - matching the NEW code
+filter_condition <- !is.na(res_data$redcap_repeat_instrument) &
+                    res_data$redcap_repeat_instrument == "Faculty Evaluation" &
+                    !is.na(res_data$fac_eval_date) &
+                    !is.na(res_data$record_id)
+
+cat("  Filter before NA handling:", sum(filter_condition, na.rm = TRUE), "TRUE,", sum(is.na(filter_condition)), "NA\n")
+
+# Ensure any NA values in filter become FALSE (explicit NA handling)
+filter_condition[is.na(filter_condition)] <- FALSE
+
+cat("  Filter after NA->FALSE:", sum(filter_condition), "TRUE,", sum(is.na(filter_condition)), "NA\n")
+
+fac_evals <- res_data[filter_condition, , drop = FALSE]
 
 cat("  After all filters:", nrow(fac_evals), "\n")
 
