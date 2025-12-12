@@ -102,5 +102,16 @@ fetch_resident_data <- function(url = Sys.getenv("REDCAP_URL"),
     }
   }
 
+  # Filter out Assessment records with blank ass_specialty
+  # These are typically old/incomplete assessments from data merges
+  if ("redcap_repeat_instrument" %in% names(res_data) && "ass_specialty" %in% names(res_data)) {
+    # Keep row if it's NOT an Assessment, OR if it IS an Assessment with non-blank specialty
+    res_data <- res_data[
+      res_data$redcap_repeat_instrument != "Assessment" |
+      (!is.na(res_data$ass_specialty) & res_data$ass_specialty != ""),
+      , drop = FALSE
+    ]
+  }
+
   return(res_data)
 }
