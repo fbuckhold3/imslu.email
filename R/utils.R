@@ -273,6 +273,14 @@ get_top_residents_fac_eval <- function(res_data, start_date, top_n = 5) {
                      check.names = FALSE))
   }
 
+  # Check required columns exist
+  if (!all(c("record_id", "name", "redcap_repeat_instrument", "fac_eval_date") %in% names(res_data))) {
+    warning("Required columns missing from data")
+    return(data.frame(Resident = character(0),
+                     `Faculty Evals Completed` = integer(0),
+                     check.names = FALSE))
+  }
+
   # Get resident names from the main records (where redcap_repeat_instrument is blank/NA)
   resident_names <- res_data[is.na(res_data$redcap_repeat_instrument) |
                                res_data$redcap_repeat_instrument == "",
@@ -280,6 +288,9 @@ get_top_residents_fac_eval <- function(res_data, start_date, top_n = 5) {
 
   # Remove any duplicate record_ids, keep first occurrence
   resident_names <- resident_names[!duplicated(resident_names$record_id), , drop = FALSE]
+
+  # Remove rows where name is NA
+  resident_names <- resident_names[!is.na(resident_names$name) & resident_names$name != "", , drop = FALSE]
 
   fac_evals <- res_data[res_data$redcap_repeat_instrument == "Faculty Evaluation" &
                          !is.na(res_data$fac_eval_date), , drop = FALSE]
@@ -312,8 +323,15 @@ get_top_residents_fac_eval <- function(res_data, start_date, top_n = 5) {
     dplyr::arrange(dplyr::desc(`Faculty Evals Completed`)) %>%
     dplyr::slice(1:top_n)
 
-  # Merge with resident names
-  top_residents <- merge(top_residents, resident_names, by = "record_id", all.x = TRUE)
+  # Merge with resident names - only keep residents that have names
+  top_residents <- merge(top_residents, resident_names, by = "record_id", all.x = FALSE)
+
+  # If no matches, return empty
+  if (nrow(top_residents) == 0) {
+    return(data.frame(Resident = character(0),
+                     `Faculty Evals Completed` = integer(0),
+                     check.names = FALSE))
+  }
 
   # Select and rename columns
   top_residents <- top_residents[, c("name", "Faculty Evals Completed"), drop = FALSE]

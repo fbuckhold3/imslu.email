@@ -56,13 +56,11 @@ total_assessments_4wk <- nrow(res_data[res_data$redcap_repeat_instrument == "Ass
                                        as.Date(res_data$ass_date) >= four_weeks_ago, ])
 ```
 
-## 📊 Key Metrics
+## 📊 Key Metrics - Academic Year
 
-::: {.panel-tabset}
+*Since `r format(academic_year_start, "%B %d, %Y")`*
 
-### Academic Year
-
-```{r metrics-year, results='asis'}
+```{r metrics-year, results='asis', echo=FALSE}
 cat(paste0(
   '<div style="display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap;">',
   '  <div style="text-align: center; padding: 20px; background: #f0f9ff; border-radius: 10px; min-width: 200px; margin: 10px;">',
@@ -81,11 +79,13 @@ cat(paste0(
 ))
 ```
 
-*Since `r format(academic_year_start, "%B %d, %Y")`*
+---
 
-### Last 4 Weeks
+## 📊 Key Metrics - Last 4 Weeks
 
-```{r metrics-4wk, results='asis'}
+*Last 28 days*
+
+```{r metrics-4wk, results='asis', echo=FALSE}
 cat(paste0(
   '<div style="display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap;">',
   '  <div style="text-align: center; padding: 20px; background: #f0f9ff; border-radius: 10px; min-width: 200px; margin: 10px;">',
@@ -104,17 +104,9 @@ cat(paste0(
 ))
 ```
 
-*Last 28 days*
-
-:::
-
 ---
 
-## 📈 Assessments by Specialty
-
-::: {.panel-tabset}
-
-### Academic Year
+## 📈 Assessments by Specialty - Academic Year
 
 ```{r specialty-year, fig.width=10, fig.height=6}
 year_specialty <- get_assessments_by_specialty_for_plot(res_data, academic_year_start)
@@ -139,7 +131,9 @@ if (nrow(year_specialty) > 0) {
 }
 ```
 
-### Last 4 Weeks
+---
+
+## 📈 Assessments by Specialty - Last 4 Weeks
 
 ```{r specialty-4wk, fig.width=10, fig.height=6}
 fourwk_specialty <- get_assessments_by_specialty_for_plot(res_data, four_weeks_ago)
@@ -164,59 +158,45 @@ if (nrow(fourwk_specialty) > 0) {
 }
 ```
 
-:::
-
 ---
 
-## 🎉 Top Faculty Contributors
-
-::: {.panel-tabset}
-
-### Academic Year Champions
+## 🎉 Top Faculty Contributors - Academic Year
 
 ```{r top-faculty-year}
 top_fac_year <- get_top_faculty(res_data, academic_year_start, top_n = 5)
 kable(top_fac_year, align = c('l', 'r'))
 ```
 
-### Last 4 Weeks MVP
+---
+
+## 🎉 Top Faculty Contributors - Last 4 Weeks
 
 ```{r top-faculty-4wk}
 top_fac_4wk <- get_top_faculty(res_data, four_weeks_ago, top_n = 5)
 kable(top_fac_4wk, align = c('l', 'r'))
 ```
 
-:::
-
 ---
 
-## 🏆 Top Residents - Faculty Evaluations
-
-::: {.panel-tabset}
-
-### Academic Year Champions
+## 🏆 Top Residents - Faculty Evaluations - Academic Year
 
 ```{r top-res-year}
 top_res_year <- get_top_residents_fac_eval(res_data, academic_year_start, top_n = 5)
 kable(top_res_year, align = c('l', 'r'))
 ```
 
-### Last 4 Weeks MVP
+---
+
+## 🏆 Top Residents - Faculty Evaluations - Last 4 Weeks
 
 ```{r top-res-4wk}
 top_res_4wk <- get_top_residents_fac_eval(res_data, four_weeks_ago, top_n = 5)
 kable(top_res_4wk, align = c('l', 'r'))
 ```
 
-:::
-
 ---
 
-## 💬 Questions by Rotation
-
-::: {.panel-tabset}
-
-### Academic Year
+## 💬 Questions by Rotation - Academic Year
 
 ```{r questions-year, fig.width=10, fig.height=6}
 q_year <- count_questions_by_rotation(res_data, academic_year_start)
@@ -241,7 +221,9 @@ if (nrow(q_year) > 0) {
 }
 ```
 
-### Last 4 Weeks
+---
+
+## 💬 Questions by Rotation - Last 4 Weeks
 
 ```{r questions-4wk, fig.width=10, fig.height=6}
 q_4wk <- count_questions_by_rotation(res_data, four_weeks_ago)
@@ -266,8 +248,6 @@ if (nrow(q_4wk) > 0) {
 }
 ```
 
-:::
-
 ---
 
 ## 🔗 Quick Links
@@ -281,12 +261,6 @@ if (nrow(q_4wk) > 0) {
 📝 [Submit Faculty Evaluation](https://fbuckhold3-imslu-facultyeval.share.connect.posit.cloud)
 
 📝 [Submit Attendance at Noon Conference](https://fbuckhold3-imslu-at-noon.share.connect.posit.cloud)
-
-### For Administrators
-
-📊 [View RDM Database](https://redcapsurvey.slu.edu/)
-
-📊 [View Faculty Database](https://redcapsurvey.slu.edu/)
 
 ---
 
