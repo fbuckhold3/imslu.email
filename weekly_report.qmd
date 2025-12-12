@@ -8,7 +8,7 @@ format:
     embed-resources: true
 execute:
   echo: false
-  warning: false
+  warning: true
   message: false
 ---
 
@@ -44,14 +44,7 @@ This report provides evaluation metrics for the current academic year (`r format
 
 ## Assessment Evaluations by Faculty
 
-Assessments are categorized by type based on the fields completed:
-
-- **Continuity Clinic** - Longitudinal clinic assessments
-- **Clinic Day** - Single clinic session assessments
-- **Consults** - Consultation service assessments
-- **Intern Inpatient** - Inpatient intern assessments
-- **Resident Inpatient** - Inpatient senior resident assessments
-- **Observational** - Direct observation assessments
+*Assessments categorized by type: Continuity Clinic, Clinic Day, Consults, Intern Inpatient, Resident Inpatient, and Observational*
 
 ### Academic Year To Date
 
