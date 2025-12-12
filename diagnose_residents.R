@@ -108,8 +108,43 @@ if ("name" %in% names(fac_evals)) {
 
 cat("\n")
 
-# 5. Recommendation
-cat("5. RECOMMENDATION:\n")
+# 5. Full details of NA record_id evaluations
+cat("5. FULL DETAILS OF NA RECORD_ID EVALUATIONS:\n")
+na_evals <- fac_evals[is.na(fac_evals$record_id), ]
+
+if (nrow(na_evals) > 0) {
+  cat("   Found", nrow(na_evals), "evaluations with NA record_id\n\n")
+
+  # Show first 5 complete rows
+  cat("   Showing first 5 complete rows (all columns):\n")
+  cat("   =============================================\n\n")
+
+  for (i in 1:min(5, nrow(na_evals))) {
+    cat("   --- Evaluation", i, "---\n")
+    row <- na_evals[i, ]
+
+    # Get all column names and values
+    for (col_name in names(row)) {
+      val <- row[[col_name]]
+      if (!is.na(val) && val != "") {
+        cat("   ", col_name, ": ", val, "\n", sep="")
+      }
+    }
+    cat("\n")
+  }
+
+  # Save full details to CSV for deeper analysis
+  csv_file <- "na_record_id_evaluations.csv"
+  write.csv(na_evals, csv_file, row.names = FALSE)
+  cat("   All", nrow(na_evals), "NA record_id evaluations saved to:", csv_file, "\n")
+} else {
+  cat("   No evaluations with NA record_id found\n")
+}
+
+cat("\n")
+
+# 6. Recommendation
+cat("6. RECOMMENDATION:\n")
 
 na_count <- sum(is.na(fac_evals$record_id))
 if (na_count > 0) {
