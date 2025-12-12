@@ -72,6 +72,12 @@ determine_assessment_type <- function(row) {
 #' @param assessments Assessment data frame
 #' @return Data frame with assessment_type column added
 add_assessment_type <- function(assessments) {
+  # Handle empty data frame
+  if (nrow(assessments) == 0) {
+    assessments$assessment_type <- character(0)
+    return(assessments)
+  }
+
   assessments$assessment_type <- apply(assessments, 1, determine_assessment_type)
   return(assessments)
 }
@@ -84,9 +90,25 @@ add_assessment_type <- function(assessments) {
 #' @param period_label Label for the time period (e.g., "Last 4 Weeks", "Academic Year")
 #' @return Summary table
 count_assessments_by_type_specialty <- function(res_data, start_date, period_label) {
+  # Handle empty input
+  if (nrow(res_data) == 0) {
+    return(data.frame(`Assessment Type` = character(0),
+                     Specialty = character(0),
+                     Count = integer(0),
+                     check.names = FALSE))
+  }
+
   # Filter to Assessment records
   assessments <- res_data[res_data$redcap_repeat_instrument == "Assessment" &
-                           !is.na(res_data$ass_date), ]
+                           !is.na(res_data$ass_date), , drop = FALSE]
+
+  # Return empty if no assessments
+  if (nrow(assessments) == 0) {
+    return(data.frame(`Assessment Type` = character(0),
+                     Specialty = character(0),
+                     Count = integer(0),
+                     check.names = FALSE))
+  }
 
   # Convert ass_date to Date if needed
   if (!inherits(assessments$ass_date, "Date")) {
@@ -94,7 +116,15 @@ count_assessments_by_type_specialty <- function(res_data, start_date, period_lab
   }
 
   # Filter by date
-  assessments <- assessments[assessments$ass_date >= start_date, ]
+  assessments <- assessments[assessments$ass_date >= start_date, , drop = FALSE]
+
+  # Return empty if no assessments in date range
+  if (nrow(assessments) == 0) {
+    return(data.frame(`Assessment Type` = character(0),
+                     Specialty = character(0),
+                     Count = integer(0),
+                     check.names = FALSE))
+  }
 
   # Add assessment type
   assessments <- add_assessment_type(assessments)
@@ -120,14 +150,36 @@ count_assessments_by_type_specialty <- function(res_data, start_date, period_lab
 #' @param start_date Start date for filtering
 #' @return Summary table
 count_assessments_by_type <- function(res_data, start_date) {
+  # Handle empty input
+  if (nrow(res_data) == 0) {
+    return(data.frame(`Assessment Type` = character(0),
+                     `Total Count` = integer(0),
+                     check.names = FALSE))
+  }
+
   assessments <- res_data[res_data$redcap_repeat_instrument == "Assessment" &
-                           !is.na(res_data$ass_date), ]
+                           !is.na(res_data$ass_date), , drop = FALSE]
+
+  # Return empty if no assessments
+  if (nrow(assessments) == 0) {
+    return(data.frame(`Assessment Type` = character(0),
+                     `Total Count` = integer(0),
+                     check.names = FALSE))
+  }
 
   if (!inherits(assessments$ass_date, "Date")) {
     assessments$ass_date <- as.Date(assessments$ass_date)
   }
 
-  assessments <- assessments[assessments$ass_date >= start_date, ]
+  assessments <- assessments[assessments$ass_date >= start_date, , drop = FALSE]
+
+  # Return empty if no assessments in date range
+  if (nrow(assessments) == 0) {
+    return(data.frame(`Assessment Type` = character(0),
+                     `Total Count` = integer(0),
+                     check.names = FALSE))
+  }
+
   assessments <- add_assessment_type(assessments)
 
   summary_table <- assessments %>%
@@ -151,14 +203,33 @@ count_assessments_by_type <- function(res_data, start_date) {
 #' @param top_n Number of top faculty to return
 #' @return Data frame with top faculty
 get_top_faculty <- function(res_data, start_date, top_n = 5) {
+  # Handle empty input
+  if (nrow(res_data) == 0) {
+    return(data.frame(Faculty = character(0),
+                     `Evaluations Completed` = integer(0),
+                     check.names = FALSE))
+  }
+
   assessments <- res_data[res_data$redcap_repeat_instrument == "Assessment" &
-                           !is.na(res_data$ass_date), ]
+                           !is.na(res_data$ass_date), , drop = FALSE]
+
+  if (nrow(assessments) == 0) {
+    return(data.frame(Faculty = character(0),
+                     `Evaluations Completed` = integer(0),
+                     check.names = FALSE))
+  }
 
   if (!inherits(assessments$ass_date, "Date")) {
     assessments$ass_date <- as.Date(assessments$ass_date)
   }
 
-  assessments <- assessments[assessments$ass_date >= start_date, ]
+  assessments <- assessments[assessments$ass_date >= start_date, , drop = FALSE]
+
+  if (nrow(assessments) == 0) {
+    return(data.frame(Faculty = character(0),
+                     `Evaluations Completed` = integer(0),
+                     check.names = FALSE))
+  }
 
   top_faculty <- assessments %>%
     dplyr::group_by(ass_faculty) %>%
@@ -182,14 +253,33 @@ get_top_faculty <- function(res_data, start_date, top_n = 5) {
 #' @param top_n Number of top residents to return
 #' @return Data frame with top residents
 get_top_residents_fac_eval <- function(res_data, start_date, top_n = 5) {
+  # Handle empty input
+  if (nrow(res_data) == 0) {
+    return(data.frame(Resident = character(0),
+                     `Faculty Evals Completed` = integer(0),
+                     check.names = FALSE))
+  }
+
   fac_evals <- res_data[res_data$redcap_repeat_instrument == "Faculty Evaluation" &
-                         !is.na(res_data$fac_eval_date), ]
+                         !is.na(res_data$fac_eval_date), , drop = FALSE]
+
+  if (nrow(fac_evals) == 0) {
+    return(data.frame(Resident = character(0),
+                     `Faculty Evals Completed` = integer(0),
+                     check.names = FALSE))
+  }
 
   if (!inherits(fac_evals$fac_eval_date, "Date")) {
     fac_evals$fac_eval_date <- as.Date(fac_evals$fac_eval_date)
   }
 
-  fac_evals <- fac_evals[fac_evals$fac_eval_date >= start_date, ]
+  fac_evals <- fac_evals[fac_evals$fac_eval_date >= start_date, , drop = FALSE]
+
+  if (nrow(fac_evals) == 0) {
+    return(data.frame(Resident = character(0),
+                     `Faculty Evals Completed` = integer(0),
+                     check.names = FALSE))
+  }
 
   top_residents <- fac_evals %>%
     dplyr::group_by(name) %>%
@@ -212,14 +302,33 @@ get_top_residents_fac_eval <- function(res_data, start_date, top_n = 5) {
 #' @param start_date Start date for filtering
 #' @return Summary table
 count_questions_by_rotation <- function(res_data, start_date) {
+  # Handle empty input
+  if (nrow(res_data) == 0) {
+    return(data.frame(Rotation = character(0),
+                     `Question Count` = integer(0),
+                     check.names = FALSE))
+  }
+
   questions <- res_data[res_data$redcap_repeat_instrument == "Questions" &
-                         !is.na(res_data$q_date), ]
+                         !is.na(res_data$q_date), , drop = FALSE]
+
+  if (nrow(questions) == 0) {
+    return(data.frame(Rotation = character(0),
+                     `Question Count` = integer(0),
+                     check.names = FALSE))
+  }
 
   if (!inherits(questions$q_date, "Date")) {
     questions$q_date <- as.Date(questions$q_date)
   }
 
-  questions <- questions[questions$q_date >= start_date, ]
+  questions <- questions[questions$q_date >= start_date, , drop = FALSE]
+
+  if (nrow(questions) == 0) {
+    return(data.frame(Rotation = character(0),
+                     `Question Count` = integer(0),
+                     check.names = FALSE))
+  }
 
   rotation_counts <- questions %>%
     dplyr::group_by(q_rotation) %>%
