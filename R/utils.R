@@ -24,41 +24,54 @@ get_academic_year_start <- function() {
 #' @return Assessment type as string
 determine_assessment_type <- function(row) {
   # Check which type of assessment fields are filled
+  # REDCap exports empty fields as "" not NA, so check both
   # Priority order matters if multiple types could be filled
+
+  # Helper function to check if any fields have actual data (not NA or empty string)
+  has_data <- function(cols) {
+    if (length(cols) == 0) return(FALSE)
+    any(!is.na(row[cols]) & row[cols] != "")
+  }
 
   # Check for Continuity Clinic (cc_)
   cc_cols <- grep("^ass_cc_", names(row), value = TRUE)
-  if (any(!is.na(row[cc_cols]))) {
+  if (has_data(cc_cols)) {
     return("Continuity Clinic")
   }
 
   # Check for Clinic Day (day_)
   day_cols <- grep("^ass_day_", names(row), value = TRUE)
-  if (any(!is.na(row[day_cols]))) {
+  if (has_data(day_cols)) {
     return("Clinic Day")
   }
 
   # Check for Consults (cons_)
   cons_cols <- grep("^ass_cons_", names(row), value = TRUE)
-  if (any(!is.na(row[cons_cols]))) {
+  if (has_data(cons_cols)) {
     return("Consults")
   }
 
   # Check for Intern Inpatient (int_ip_)
   int_ip_cols <- grep("^ass_int_ip_", names(row), value = TRUE)
-  if (any(!is.na(row[int_ip_cols]))) {
+  if (has_data(int_ip_cols)) {
     return("Intern Inpatient")
   }
 
   # Check for Resident Inpatient (res_ip_)
   res_ip_cols <- grep("^ass_res_ip_", names(row), value = TRUE)
-  if (any(!is.na(row[res_ip_cols]))) {
+  if (has_data(res_ip_cols)) {
     return("Resident Inpatient")
+  }
+
+  # Check for Bridge assessments (bridge_)
+  bridge_cols <- grep("^ass_bridge_", names(row), value = TRUE)
+  if (has_data(bridge_cols)) {
+    return("Bridge")
   }
 
   # Check for Observational (obs_)
   obs_cols <- grep("^ass_obs_", names(row), value = TRUE)
-  if (any(!is.na(row[obs_cols]))) {
+  if (has_data(obs_cols)) {
     return("Observational")
   }
 

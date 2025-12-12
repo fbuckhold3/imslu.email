@@ -44,7 +44,7 @@ This report provides evaluation metrics for the current academic year (`r format
 
 ## Assessment Evaluations by Faculty
 
-*Assessments categorized by type: Continuity Clinic, Clinic Day, Consults, Intern Inpatient, Resident Inpatient, and Observational*
+*Assessments categorized by type: Continuity Clinic, Clinic Day, Consults, Intern Inpatient, Resident Inpatient, Bridge, and Observational*
 
 ### Academic Year To Date
 
