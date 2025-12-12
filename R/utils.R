@@ -273,6 +273,14 @@ get_top_residents_fac_eval <- function(res_data, start_date, top_n = 5) {
                      check.names = FALSE))
   }
 
+  # Get resident names from the main records (where redcap_repeat_instrument is blank/NA)
+  resident_names <- res_data[is.na(res_data$redcap_repeat_instrument) |
+                               res_data$redcap_repeat_instrument == "",
+                             c("record_id", "name"), drop = FALSE]
+
+  # Remove any duplicate record_ids, keep first occurrence
+  resident_names <- resident_names[!duplicated(resident_names$record_id), , drop = FALSE]
+
   fac_evals <- res_data[res_data$redcap_repeat_instrument == "Faculty Evaluation" &
                          !is.na(res_data$fac_eval_date), , drop = FALSE]
 
@@ -294,8 +302,9 @@ get_top_residents_fac_eval <- function(res_data, start_date, top_n = 5) {
                      check.names = FALSE))
   }
 
+  # Count by record_id first
   top_residents <- fac_evals %>%
-    dplyr::group_by(name) %>%
+    dplyr::group_by(record_id) %>%
     dplyr::summarize(
       `Faculty Evals Completed` = dplyr::n(),
       .groups = 'drop'
@@ -303,6 +312,11 @@ get_top_residents_fac_eval <- function(res_data, start_date, top_n = 5) {
     dplyr::arrange(dplyr::desc(`Faculty Evals Completed`)) %>%
     dplyr::slice(1:top_n)
 
+  # Merge with resident names
+  top_residents <- merge(top_residents, resident_names, by = "record_id", all.x = TRUE)
+
+  # Select and rename columns
+  top_residents <- top_residents[, c("name", "Faculty Evals Completed"), drop = FALSE]
   colnames(top_residents)[1] <- "Resident"
 
   return(as.data.frame(top_residents))
