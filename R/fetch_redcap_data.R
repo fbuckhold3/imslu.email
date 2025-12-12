@@ -114,24 +114,24 @@ fetch_resident_data <- function(url = Sys.getenv("REDCAP_URL"),
   }
 
   # Filter out Faculty Evaluation records with invalid record_id
-  # Also filter out rows where BOTH redcap_repeat_instrument AND record_id are NA/invalid
+  # record_id is integer type, so we only need to check for NA values
   if ("redcap_repeat_instrument" %in% names(res_data) && "record_id" %in% names(res_data)) {
     # Identify Faculty Evaluations
     is_fac_eval <- !is.na(res_data$redcap_repeat_instrument) & res_data$redcap_repeat_instrument == "Faculty Evaluation"
 
-    # Identify invalid record_id (NA, empty string, or string "NA")
-    has_invalid_record <- is.na(res_data$record_id) |
-                          res_data$record_id == "" |
-                          res_data$record_id == "NA"
+    # Identify invalid record_id (just check for NA since it's integer type)
+    has_invalid_record <- is.na(res_data$record_id)
 
     # Remove Faculty Evaluations with invalid record_id
     fac_eval_with_invalid <- is_fac_eval & has_invalid_record
 
-    # Also remove rows where BOTH instrument and record_id are invalid (old merge data)
+    # Also remove rows where BOTH instrument and record_id are NA (old merge data)
     both_invalid <- is.na(res_data$redcap_repeat_instrument) & has_invalid_record
 
-    # Remove both types of bad rows
+    # Build final filter and ensure NAs become FALSE
     bad_rows <- fac_eval_with_invalid | both_invalid
+    bad_rows[is.na(bad_rows)] <- FALSE
+
     res_data <- res_data[!bad_rows, , drop = FALSE]
   }
 
