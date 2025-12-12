@@ -28,11 +28,23 @@ fetch_faculty_data <- function(url = Sys.getenv("REDCAP_URL"),
   fac_data <- read.csv(text = httr::content(response, "text", encoding = "UTF-8"),
                        stringsAsFactors = FALSE)
 
-  # Filter out archived records (archived == "No")
-  fac_data <- fac_data[fac_data$archived == "No", ]
+  # Check if data was returned
+  if (nrow(fac_data) == 0) {
+    warning("No faculty data returned from REDCap")
+    return(data.frame())
+  }
 
-  # Select only needed columns
-  fac_data <- fac_data[, c("fac_name", "fac_email", "fac_clin", "fac_div")]
+  # Filter out archived records (archived == "No") if column exists
+  if ("archived" %in% names(fac_data)) {
+    fac_data <- fac_data[fac_data$archived == "No", , drop = FALSE]
+  }
+
+  # Select only needed columns if they exist
+  needed_cols <- c("fac_name", "fac_email", "fac_clin", "fac_div")
+  existing_cols <- intersect(needed_cols, names(fac_data))
+  if (length(existing_cols) > 0) {
+    fac_data <- fac_data[, existing_cols, drop = FALSE]
+  }
 
   return(fac_data)
 }
@@ -72,8 +84,16 @@ fetch_resident_data <- function(url = Sys.getenv("REDCAP_URL"),
   res_data <- read.csv(text = httr::content(response, "text", encoding = "UTF-8"),
                        stringsAsFactors = FALSE)
 
-  # Filter out archived residents (res_archive != "Yes")
-  res_data <- res_data[res_data$res_archive != "Yes", ]
+  # Check if data was returned
+  if (nrow(res_data) == 0) {
+    warning("No resident data returned from REDCap")
+    return(data.frame())
+  }
+
+  # Filter out archived residents (res_archive != "Yes") if column exists
+  if ("res_archive" %in% names(res_data)) {
+    res_data <- res_data[res_data$res_archive != "Yes", , drop = FALSE]
+  }
 
   return(res_data)
 }
