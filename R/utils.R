@@ -296,7 +296,10 @@ get_top_residents_fac_eval <- function(res_data, start_date, top_n = 5) {
     fac_evals$fac_eval_date <- as.Date(fac_evals$fac_eval_date)
   }
 
-  fac_evals <- fac_evals[fac_evals$fac_eval_date >= start_date, , drop = FALSE]
+  # Filter by date with explicit NA handling
+  date_filter <- fac_evals$fac_eval_date >= start_date
+  date_filter[is.na(date_filter)] <- FALSE
+  fac_evals <- fac_evals[date_filter, , drop = FALSE]
 
   if (nrow(fac_evals) == 0) {
     return(data.frame(Resident = character(0),
