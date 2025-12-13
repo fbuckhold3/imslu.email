@@ -5,6 +5,7 @@
     "appmode": "quarto",
     "entrypoint": "weekly_report.qmd"
   },
+  "platform": "4.3.1",
   "r": {
     "version": "4.3.1"
   }
