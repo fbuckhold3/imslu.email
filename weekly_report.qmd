@@ -63,6 +63,30 @@ top_res_year <- get_top_residents_fac_eval(res_data, academic_year_start, top_n 
 top_res_4wk <- get_top_residents_fac_eval(res_data, four_weeks_ago, top_n = 1)
 ```
 
+```{r configure-email}
+# Configure email distribution for Posit Connect Cloud
+# This runs only when deployed on Connect, not during local rendering
+if (Sys.getenv("RSTUDIO_PRODUCT") == "CONNECT") {
+  source("R/get_email_list.R")
+
+  # Get dynamic email list from both databases
+  email_list <- get_email_list()
+
+  # Configure Connect Cloud email settings
+  rmarkdown::output_metadata$set(
+    rsc_email_subject = "IMSLU Weekly Assessment Report - Week of {.Date}",
+    rsc_email_body_html = "<p>Please find the weekly assessment report attached.</p><p>This report includes faculty assessments, conference attendance, and resident evaluations for the IMSLU Residency Program.</p>",
+    rsc_email_suppress_report_attachment = FALSE,
+    rsc_output_files = list(),
+    connect = list(
+      email = list(
+        to = email_list
+      )
+    )
+  )
+}
+```
+
 ## 🔗 Quick Links
 
 📝 [Submit Resident Assessment](https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud)
