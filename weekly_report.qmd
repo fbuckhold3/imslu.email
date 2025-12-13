@@ -95,14 +95,22 @@ Assessments are categorized by type based on the fields completed:
 
 ```{r assess-year-total}
 year_totals <- count_assessments_by_type(res_data, academic_year_start)
-kable(year_totals)
+if (nrow(year_totals) > 0) {
+  kable(year_totals)
+} else {
+  cat("*No assessment data available for this period.*\n")
+}
 ```
 
 #### By Type and Specialty
 
 ```{r assess-year-detail}
 year_detail <- count_assessments_by_type_specialty(res_data, academic_year_start, "Count")
-kable(year_detail)
+if (nrow(year_detail) > 0) {
+  kable(year_detail)
+} else {
+  cat("*No assessment data available for this period.*\n")
+}
 ```
 
 ### Last 4 Weeks
@@ -111,14 +119,22 @@ kable(year_detail)
 
 ```{r assess-4wk-total}
 fourwk_totals <- count_assessments_by_type(res_data, four_weeks_ago)
-kable(fourwk_totals)
+if (nrow(fourwk_totals) > 0) {
+  kable(fourwk_totals)
+} else {
+  cat("*No assessment data available for this period.*\n")
+}
 ```
 
 #### By Type and Specialty
 
 ```{r assess-4wk-detail}
 fourwk_detail <- count_assessments_by_type_specialty(res_data, four_weeks_ago, "Count")
-kable(fourwk_detail)
+if (nrow(fourwk_detail) > 0) {
+  kable(fourwk_detail)
+} else {
+  cat("*No assessment data available for this period.*\n")
+}
 ```
 
 ---
@@ -129,14 +145,22 @@ kable(fourwk_detail)
 
 ```{r top-faculty-year}
 top_fac_year <- get_top_faculty(res_data, academic_year_start, top_n = 5)
-kable(top_fac_year)
+if (nrow(top_fac_year) > 0) {
+  kable(top_fac_year)
+} else {
+  cat("*No faculty evaluation data available for this period.*\n")
+}
 ```
 
 ### Last 4 Weeks MVP
 
 ```{r top-faculty-4wk}
 top_fac_4wk <- get_top_faculty(res_data, four_weeks_ago, top_n = 5)
-kable(top_fac_4wk)
+if (nrow(top_fac_4wk) > 0) {
+  kable(top_fac_4wk)
+} else {
+  cat("*No faculty evaluation data available for this period.*\n")
+}
 ```
 
 ---
@@ -151,14 +175,22 @@ Residents evaluate faculty after working with them on rotations.
 
 ```{r top-res-year}
 top_res_year <- get_top_residents_fac_eval(res_data, academic_year_start, top_n = 5)
-kable(top_res_year)
+if (nrow(top_res_year) > 0) {
+  kable(top_res_year)
+} else {
+  cat("*No resident evaluation data available for this period.*\n")
+}
 ```
 
 #### Last 4 Weeks MVP
 
 ```{r top-res-4wk}
 top_res_4wk <- get_top_residents_fac_eval(res_data, four_weeks_ago, top_n = 5)
-kable(top_res_4wk)
+if (nrow(top_res_4wk) > 0) {
+  kable(top_res_4wk)
+} else {
+  cat("*No resident evaluation data available for this period.*\n")
+}
 ```
 
 ---
@@ -171,14 +203,22 @@ Residents submit questions during rotations for noon conference discussions.
 
 ```{r questions-year}
 q_year <- count_questions_by_rotation(res_data, academic_year_start)
-kable(q_year)
+if (nrow(q_year) > 0) {
+  kable(q_year)
+} else {
+  cat("*No questions submitted for this period.*\n")
+}
 ```
 
 ### Last 4 Weeks
 
 ```{r questions-4wk}
 q_4wk <- count_questions_by_rotation(res_data, four_weeks_ago)
-kable(q_4wk)
+if (nrow(q_4wk) > 0) {
+  kable(q_4wk)
+} else {
+  cat("*No questions submitted for this period.*\n")
+}
 ```
 
 ---
