@@ -6,7 +6,6 @@ format:
     toc-depth: 2
     theme: default
     embed-resources: true
-    email-recipients: !expr get_email_recipients()
 execute:
   echo: false
   warning: false
