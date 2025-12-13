@@ -325,8 +325,9 @@ get_top_residents_fac_eval <- function(res_data, start_date, top_n = 5) {
     dplyr::arrange(dplyr::desc(`Faculty Evals Completed`)) %>%
     dplyr::slice(1:top_n)
 
-  # Merge with names - use left join to keep all top records
-  result <- merge(eval_counts, resident_names, by = "record_id", all.x = TRUE)
+  # Merge with names using left_join to preserve sort order
+  result <- eval_counts %>%
+    dplyr::left_join(resident_names, by = "record_id")
 
   # Replace NA names with record_id as fallback
   result$name[is.na(result$name) | result$name == ""] <- paste0("Record_", result$record_id[is.na(result$name) | result$name == ""])
