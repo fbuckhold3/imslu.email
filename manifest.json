@@ -4,5 +4,8 @@
   "metadata": {
     "appmode": "quarto",
     "entrypoint": "weekly_report.qmd"
+  },
+  "r": {
+    "version": "4.3.1"
   }
 }
