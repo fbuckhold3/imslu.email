@@ -6,6 +6,7 @@ format:
     toc-depth: 2
     theme: default
     embed-resources: true
+    email-recipients: !expr get_email_recipients()
 execute:
   echo: false
   warning: false
@@ -31,6 +32,42 @@ res_data <- fetch_resident_data()
 # Calculate time periods
 academic_year_start <- get_academic_year_start()
 four_weeks_ago <- Sys.Date() - 28
+```
+
+```{r email-recipients, include=FALSE}
+#' Get email recipients from faculty and resident databases
+#' This function is used by Posit Connect for email distribution
+get_email_recipients <- function() {
+  # Fetch fresh data for email addresses
+  fac_data <- fetch_faculty_data()
+  res_data <- fetch_resident_data()
+
+  # Extract faculty emails
+  fac_emails <- character(0)
+  if (nrow(fac_data) > 0 && "fac_email" %in% names(fac_data)) {
+    fac_emails <- fac_data$fac_email[!is.na(fac_data$fac_email) & fac_data$fac_email != ""]
+  }
+
+  # Extract resident emails (from unique residents, not repeating instances)
+  res_emails <- character(0)
+  if (nrow(res_data) > 0 && "email" %in% names(res_data)) {
+    # Get unique resident records (redcap_repeat_instrument is empty for main records)
+    resident_records <- res_data[is.na(res_data$redcap_repeat_instrument) |
+                                  res_data$redcap_repeat_instrument == "", , drop = FALSE]
+    res_emails <- resident_records$email[!is.na(resident_records$email) &
+                                          resident_records$email != ""]
+    res_emails <- unique(res_emails)
+  }
+
+  # Combine and deduplicate
+  all_emails <- unique(c(fac_emails, res_emails))
+
+  # Return as comma-separated string for Posit Connect
+  paste(all_emails, collapse = ", ")
+}
+
+# Store email list for reference
+email_recipients <- get_email_recipients()
 ```
 
 ## Summary

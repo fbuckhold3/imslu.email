@@ -1,6 +1,6 @@
 # Weekly REDCap Email Report
 
-Automated weekly email report that pulls evaluation and attendance data from REDCap and sends summaries to faculty.
+Automated weekly email report that pulls evaluation and attendance data from REDCap and sends summaries to faculty and residents.
 
 ## Overview
 
@@ -8,18 +8,31 @@ This project:
 - Pulls data from two REDCap databases (faculty and resident/rdm)
 - Generates HTML summary tables and visualizations
 - Sends weekly emails via Posit Connect Cloud scheduler
+- Automatically emails all faculty (using `fac_email` field) and residents (using `email` field)
+- Scheduled to run every Monday morning at 8:00 AM
+
+## Quick Start
+
+**📧 Want to set up weekly emails in Posit Connect?**
+👉 See **[POSIT_CONNECT_SETUP.md](POSIT_CONNECT_SETUP.md)** for detailed step-by-step instructions.
+
+**🧪 Want to test locally first?**
+Continue reading below for local development setup.
 
 ## Project Structure
 
 ```
 imslu.email/
-├── weekly_report.qmd        # Main Quarto report (email template)
+├── weekly_report.qmd         # Main Quarto report (email template)
 ├── R/
-│   ├── fetch_redcap_data.R  # REDCap API functions
-│   └── utils.R              # Summary/counting functions
-├── .Renviron.example        # Environment variable template
-├── manifest.json            # R package dependencies (for Posit Connect)
-└── README.md
+│   ├── fetch_redcap_data.R   # REDCap API functions
+│   └── utils.R               # Summary/counting functions
+├── get_email_list.R          # Helper to generate email recipient list
+├── setup_connect_email.R     # Automated Posit Connect configuration
+├── .Renviron.example         # Environment variable template
+├── manifest.json             # R package dependencies (for Posit Connect)
+├── POSIT_CONNECT_SETUP.md    # 📧 Detailed Posit Connect deployment guide
+└── README.md                 # This file
 ```
 
 ## Local Development Setup
@@ -73,65 +86,20 @@ The report is already configured for your REDCap data structure. Customization i
 
 ## Posit Connect Cloud Deployment
 
-### 1. Generate Manifest
+**For complete deployment instructions including email setup, see [POSIT_CONNECT_SETUP.md](POSIT_CONNECT_SETUP.md)**
 
-Create a `manifest.json` file to track dependencies for Posit Connect:
+### Quick Overview
 
-```r
-library(rsconnect)
-rsconnect::writeManifest()
-```
+1. **Deploy** the report to Posit Connect Cloud (via RStudio or git-backed)
+2. **Configure** environment variables (REDCAP_URL, tokens)
+3. **Schedule** for Monday mornings (cron: `0 8 * * 1`)
+4. **Set up email** delivery to faculty and residents
+5. **Generate email list** using:
+   ```r
+   Rscript get_email_list.R
+   ```
 
-Commit the manifest:
-
-```bash
-git add manifest.json
-git commit -m "Add manifest for Posit Connect"
-git push
-```
-
-### 2. Deploy to Posit Connect
-
-**Option A: Direct publish from RStudio (recommended)**
-
-```r
-library(rsconnect)
-rsconnect::deployDoc("weekly_report.qmd")
-```
-
-**Option B: Git-backed deployment**
-
-1. Log into Posit Connect Cloud
-2. Click "Publish" → "Import from Git"
-3. Connect your GitHub repository
-4. Select `weekly_report.qmd` as the content
-5. Connect will use `manifest.json` for dependencies
-
-### 3. Configure Environment Variables in Connect
-
-In the Posit Connect UI for your deployed content:
-
-1. Go to "Vars" tab
-2. Add three environment variables:
-   - `REDCAP_URL` = `https://redcapsurvey.slu.edu/api/`
-   - `REDCAP_FAC_TOKEN` = your faculty token
-   - `REDCAP_RDM_TOKEN` = your rdm token
-
-### 4. Set Schedule
-
-1. Go to "Schedule" tab
-2. Set schedule type: "Cron"
-3. For weekly Monday 8am: `0 8 * * 1`
-4. Set timezone appropriately
-
-### 5. Configure Email Distribution
-
-1. Go to "Access" or "Email" settings
-2. Enable "Send email when content is updated"
-3. Add recipient email addresses
-4. Customize email subject line (optional)
-
-The rendered HTML report will be sent as the email body automatically.
+The `manifest.json` file is already configured with all necessary dependencies.
 
 ## Updating the Report
 

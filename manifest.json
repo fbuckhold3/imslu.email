@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "locale": "en_US.UTF-8",
+  "metadata": {
+    "appmode": "quarto",
+    "entrypoint": "weekly_report.qmd",
+    "content_category": "document"
+  },
+  "packages": {
+    "R": [
+      {
+        "package": "httr",
+        "version": "1.4.7",
+        "repository": "CRAN"
+      },
+      {
+        "package": "dplyr",
+        "version": "1.1.4",
+        "repository": "CRAN"
+      },
+      {
+        "package": "knitr",
+        "version": "1.48",
+        "repository": "CRAN"
+      },
+      {
+        "package": "ggplot2",
+        "version": "3.5.1",
+        "repository": "CRAN"
+      },
+      {
+        "package": "connectapi",
+        "version": "0.3.0",
+        "repository": "CRAN"
+      }
+    ]
+  },
+  "files": {
+    "weekly_report.qmd": {
+      "checksum": "auto"
+    },
+    "R/fetch_redcap_data.R": {
+      "checksum": "auto"
+    },
+    "R/utils.R": {
+      "checksum": "auto"
+    }
+  }
+}
