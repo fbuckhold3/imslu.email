@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "locale": "en_US.UTF-8",
+  "metadata": {
+    "appmode": "quarto",
+    "entrypoint": "weekly_report.qmd"
+  },
+  "platform": "4.3.3",
+  "r": {
+    "version": "4.3.3"
+  }
+}
