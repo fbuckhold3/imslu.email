@@ -35,11 +35,15 @@ fac_evals <- res_data[filter_condition, , drop = FALSE]
 cat("   Rows after filter:", nrow(fac_evals), "\n")
 cat("   NA record_ids:", sum(is.na(fac_evals$record_id)), "\n")
 
-# Convert date and filter by date
+# Convert date and filter by date with explicit NA handling
 if (!inherits(fac_evals$fac_eval_date, "Date")) {
   fac_evals$fac_eval_date <- as.Date(fac_evals$fac_eval_date)
 }
-fac_evals <- fac_evals[fac_evals$fac_eval_date >= academic_year_start, , drop = FALSE]
+
+# Filter by date with explicit NA handling
+date_filter <- fac_evals$fac_eval_date >= academic_year_start
+date_filter[is.na(date_filter)] <- FALSE
+fac_evals <- fac_evals[date_filter, , drop = FALSE]
 
 cat("   After date filter:", nrow(fac_evals), "\n")
 cat("   NA record_ids after date:", sum(is.na(fac_evals$record_id)), "\n")
