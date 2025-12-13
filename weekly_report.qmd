@@ -1,5 +1,5 @@
 ---
-title: "Weekly Resident Evaluation Report"
+title: "IMSLU Residency Program Weekly Assessment Report"
 format:
   html:
     toc: true
@@ -8,7 +8,7 @@ format:
     embed-resources: true
 execute:
   echo: false
-  warning: true
+  warning: false
   message: false
 ---
 
@@ -24,11 +24,12 @@ source("R/fetch_redcap_data.R")
 source("R/utils.R")
 
 # Set ggplot theme for consistent styling
-theme_set(theme_minimal(base_size = 14) +
+theme_set(theme_minimal(base_size = 16) +
   theme(
-    plot.title = element_text(face = "bold", size = 16),
-    plot.subtitle = element_text(size = 12, color = "grey40"),
-    axis.title = element_text(face = "bold"),
+    plot.title = element_text(face = "bold", size = 18),
+    plot.subtitle = element_text(size = 14, color = "grey40"),
+    axis.title = element_text(face = "bold", size = 14),
+    axis.text = element_text(size = 12),
     panel.grid.minor = element_blank()
   ))
 ```
@@ -55,9 +56,36 @@ total_assessments_year <- nrow(res_data[res_data$redcap_repeat_instrument == "As
 total_assessments_4wk <- nrow(res_data[res_data$redcap_repeat_instrument == "Assessment" &
                                        !is.na(res_data$ass_date) &
                                        as.Date(res_data$ass_date) >= four_weeks_ago, ])
+
+# Get top contributors for callouts
+top_fac_4wk <- get_top_faculty(res_data, four_weeks_ago, top_n = 1)
+top_res_year <- get_top_residents_fac_eval(res_data, academic_year_start, top_n = 1)
+top_res_4wk <- get_top_residents_fac_eval(res_data, four_weeks_ago, top_n = 1)
 ```
 
-## 📊 Key Metrics - Academic Year
+## 🔗 Quick Links
+
+📝 [Submit Resident Assessment](https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud)
+
+📝 [Submit Faculty Evaluation](https://fbuckhold3-imslu-facultyeval.share.connect.posit.cloud)
+
+📝 [Submit Attendance at Noon Conference](https://fbuckhold3-imslu-at-noon.share.connect.posit.cloud)
+
+---
+
+## Faculty / Fellow Assessment of Residents
+
+Quality assessment and feedback is how residents in the IMSLU Residency Program improve and how the Program makes determinations of competence.
+
+We expect residents obtain at least **25 assessments per year**, with the goal of getting one weekly.
+
+Who in the Department should be giving feedback? Everyone that works with a resident - Faculty or Fellows.
+
+Completing an assessment is simple and can be done with a mobile device and has a voice to text option. Access it [here](https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud).
+
+Below is a status report for assessments gathered for the year and in the last 4 weeks. `r if(nrow(top_fac_4wk) > 0 && !is.na(top_fac_4wk$Faculty[1])) paste0("Shout out to **", top_fac_4wk$Faculty[1], "** for being the Faculty Champion of Assessments!")`
+
+### 📊 Key Metrics - Academic Year
 
 *Since `r format(academic_year_start, "%B %d, %Y")`*
 
@@ -72,17 +100,11 @@ htmltools::HTML(sprintf('
     <div style="font-size: 48px; font-weight: bold; color: #15803d;">%d</div>
     <div style="font-size: 14px; color: #64748b;">Total Assessments</div>
   </div>
-  <div style="text-align: center; padding: 20px; background: #fef3c7; border-radius: 10px; min-width: 200px; margin: 10px;">
-    <div style="font-size: 48px; font-weight: bold; color: #b45309;">%.1f</div>
-    <div style="font-size: 14px; color: #64748b;">Avg Conferences/Resident</div>
-  </div>
 </div>
-', avg_evals_year, total_assessments_year, avg_conf_year))
+', avg_evals_year, total_assessments_year))
 ```
 
----
-
-## 📊 Key Metrics - Last 4 Weeks
+### 📊 Key Metrics - Last 4 Weeks
 
 *Last 28 days*
 
@@ -97,27 +119,21 @@ htmltools::HTML(sprintf('
     <div style="font-size: 48px; font-weight: bold; color: #15803d;">%d</div>
     <div style="font-size: 14px; color: #64748b;">Total Assessments</div>
   </div>
-  <div style="text-align: center; padding: 20px; background: #fef3c7; border-radius: 10px; min-width: 200px; margin: 10px;">
-    <div style="font-size: 48px; font-weight: bold; color: #b45309;">%.1f</div>
-    <div style="font-size: 14px; color: #64748b;">Avg Conferences/Resident</div>
-  </div>
 </div>
-', avg_evals_4wk, total_assessments_4wk, avg_conf_4wk))
+', avg_evals_4wk, total_assessments_4wk))
 ```
 
----
+### 📈 Assessments by Specialty - Academic Year
 
-## 📈 Assessments by Specialty - Academic Year
-
-```{r specialty-year, fig.width=10, fig.height=6}
+```{r specialty-year, fig.width=12, fig.height=8}
 year_specialty <- get_assessments_by_specialty_for_plot(res_data, academic_year_start)
 
 if (nrow(year_specialty) > 0) {
   ggplot(year_specialty, aes(x = reorder(Specialty, Count), y = Count, fill = Count)) +
     geom_col() +
-    geom_text(aes(label = Count), hjust = -0.2, size = 4) +
+    geom_text(aes(label = Count), hjust = -0.2, size = 5, fontface = "bold") +
     coord_flip() +
-    scale_fill_gradient(low = "#93c5fd", high = "#1e40af") +
+    scale_fill_gradient(low = "#93c5fd", high = "#1e3a8a") +
     labs(
       title = "Assessments by Specialty",
       subtitle = paste("Academic Year:", format(academic_year_start, "%b %Y"), "- Present"),
@@ -125,26 +141,24 @@ if (nrow(year_specialty) > 0) {
       y = "Number of Assessments"
     ) +
     theme(legend.position = "none") +
-    expand_limits(y = max(year_specialty$Count) * 1.1)
+    expand_limits(y = max(year_specialty$Count) * 1.15)
 } else {
   plot.new()
   text(0.5, 0.5, "No assessment data available", cex = 1.5, col = "gray50")
 }
 ```
 
----
+### 📈 Assessments by Specialty - Last 4 Weeks
 
-## 📈 Assessments by Specialty - Last 4 Weeks
-
-```{r specialty-4wk, fig.width=10, fig.height=6}
+```{r specialty-4wk, fig.width=12, fig.height=8}
 fourwk_specialty <- get_assessments_by_specialty_for_plot(res_data, four_weeks_ago)
 
 if (nrow(fourwk_specialty) > 0) {
   ggplot(fourwk_specialty, aes(x = reorder(Specialty, Count), y = Count, fill = Count)) +
     geom_col() +
-    geom_text(aes(label = Count), hjust = -0.2, size = 4) +
+    geom_text(aes(label = Count), hjust = -0.2, size = 5, fontface = "bold") +
     coord_flip() +
-    scale_fill_gradient(low = "#86efac", high = "#15803d") +
+    scale_fill_gradient(low = "#86efac", high = "#166534") +
     labs(
       title = "Assessments by Specialty",
       subtitle = "Last 4 Weeks",
@@ -152,116 +166,136 @@ if (nrow(fourwk_specialty) > 0) {
       y = "Number of Assessments"
     ) +
     theme(legend.position = "none") +
-    expand_limits(y = max(fourwk_specialty$Count) * 1.1)
+    expand_limits(y = max(fourwk_specialty$Count) * 1.15)
 } else {
   plot.new()
   text(0.5, 0.5, "No assessment data available", cex = 1.5, col = "gray50")
 }
 ```
 
----
-
-## 🎉 Top Faculty Contributors - Academic Year
+### 🎉 Top Faculty Contributors - Academic Year
 
 ```{r top-faculty-year}
 top_fac_year <- get_top_faculty(res_data, academic_year_start, top_n = 5)
 kable(top_fac_year, align = c('l', 'r'))
 ```
 
----
-
-## 🎉 Top Faculty Contributors - Last 4 Weeks
+### 🎉 Top Faculty Contributors - Last 4 Weeks
 
 ```{r top-faculty-4wk}
-top_fac_4wk <- get_top_faculty(res_data, four_weeks_ago, top_n = 5)
-kable(top_fac_4wk, align = c('l', 'r'))
+top_fac_4wk_full <- get_top_faculty(res_data, four_weeks_ago, top_n = 5)
+kable(top_fac_4wk_full, align = c('l', 'r'))
 ```
 
 ---
 
-## 🏆 Top Residents - Faculty Evaluations - Academic Year
+## Conference Attendance
 
-```{r top-res-year}
-top_res_year <- get_top_residents_fac_eval(res_data, academic_year_start, top_n = 5)
-kable(top_res_year, align = c('l', 'r'))
+The IMSLU Program has started to track Noon Conference Attendance. This is an expectation of ALL residents to attend - if on the SSM Campus to go to the SLU Hospital Conference, if at VA then the VA.
+
+Below is the breakdown by rotation of Conference Attendance.
+
+### 📊 Attendance Metrics - Academic Year
+
+*Since `r format(academic_year_start, "%B %d, %Y")`*
+
+```{r conf-metrics-year, results='asis', echo=FALSE}
+htmltools::HTML(sprintf('
+<div style="display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap;">
+  <div style="text-align: center; padding: 20px; background: #fef3c7; border-radius: 10px; min-width: 200px; margin: 10px;">
+    <div style="font-size: 48px; font-weight: bold; color: #b45309;">%.1f</div>
+    <div style="font-size: 14px; color: #64748b;">Avg Attendance/Resident</div>
+  </div>
+</div>
+', avg_conf_year))
 ```
 
----
+### 📊 Attendance Metrics - Last 4 Weeks
 
-## 🏆 Top Residents - Faculty Evaluations - Last 4 Weeks
+*Last 28 days*
 
-```{r top-res-4wk}
-top_res_4wk <- get_top_residents_fac_eval(res_data, four_weeks_ago, top_n = 5)
-kable(top_res_4wk, align = c('l', 'r'))
+```{r conf-metrics-4wk, results='asis', echo=FALSE}
+htmltools::HTML(sprintf('
+<div style="display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap;">
+  <div style="text-align: center; padding: 20px; background: #fef3c7; border-radius: 10px; min-width: 200px; margin: 10px;">
+    <div style="font-size: 48px; font-weight: bold; color: #b45309;">%.1f</div>
+    <div style="font-size: 14px; color: #64748b;">Avg Attendance/Resident</div>
+  </div>
+</div>
+', avg_conf_4wk))
 ```
 
----
+### 📈 Attendance by Rotation - Academic Year
 
-## 💬 Questions by Rotation - Academic Year
-
-```{r questions-year, fig.width=10, fig.height=6}
+```{r attendance-year, fig.width=12, fig.height=8}
 q_year <- count_questions_by_rotation(res_data, academic_year_start)
 
 if (nrow(q_year) > 0) {
   ggplot(q_year, aes(x = reorder(Rotation, `Question Count`), y = `Question Count`, fill = `Question Count`)) +
     geom_col() +
-    geom_text(aes(label = `Question Count`), hjust = -0.2, size = 4) +
+    geom_text(aes(label = `Question Count`), hjust = -0.2, size = 5, fontface = "bold") +
     coord_flip() +
-    scale_fill_gradient(low = "#fde68a", high = "#b45309") +
+    scale_fill_gradient(low = "#fde68a", high = "#92400e") +
     labs(
-      title = "Questions Submitted by Rotation",
+      title = "Conference Attendance by Rotation",
       subtitle = paste("Academic Year:", format(academic_year_start, "%b %Y"), "- Present"),
       x = NULL,
-      y = "Number of Questions"
+      y = "Number of Attendances"
     ) +
     theme(legend.position = "none") +
-    expand_limits(y = max(q_year$`Question Count`) * 1.1)
+    expand_limits(y = max(q_year$`Question Count`) * 1.15)
 } else {
   plot.new()
-  text(0.5, 0.5, "No question data available", cex = 1.5, col = "gray50")
+  text(0.5, 0.5, "No attendance data available", cex = 1.5, col = "gray50")
 }
 ```
 
----
+### 📈 Attendance by Rotation - Last 4 Weeks
 
-## 💬 Questions by Rotation - Last 4 Weeks
-
-```{r questions-4wk, fig.width=10, fig.height=6}
+```{r attendance-4wk, fig.width=12, fig.height=8}
 q_4wk <- count_questions_by_rotation(res_data, four_weeks_ago)
 
 if (nrow(q_4wk) > 0) {
   ggplot(q_4wk, aes(x = reorder(Rotation, `Question Count`), y = `Question Count`, fill = `Question Count`)) +
     geom_col() +
-    geom_text(aes(label = `Question Count`), hjust = -0.2, size = 4) +
+    geom_text(aes(label = `Question Count`), hjust = -0.2, size = 5, fontface = "bold") +
     coord_flip() +
-    scale_fill_gradient(low = "#fde68a", high = "#b45309") +
+    scale_fill_gradient(low = "#fde68a", high = "#92400e") +
     labs(
-      title = "Questions Submitted by Rotation",
+      title = "Conference Attendance by Rotation",
       subtitle = "Last 4 Weeks",
       x = NULL,
-      y = "Number of Questions"
+      y = "Number of Attendances"
     ) +
     theme(legend.position = "none") +
-    expand_limits(y = max(q_4wk$`Question Count`) * 1.1)
+    expand_limits(y = max(q_4wk$`Question Count`) * 1.15)
 } else {
   plot.new()
-  text(0.5, 0.5, "No question data available", cex = 1.5, col = "gray50")
+  text(0.5, 0.5, "No attendance data available", cex = 1.5, col = "gray50")
 }
 ```
 
 ---
 
-## 🔗 Quick Links
+## Resident Evaluation of Faculty
 
-### For Faculty
+Residents are expected to complete 25 evaluations of faculty each year. `r if(nrow(top_res_year) > 0 && !is.na(top_res_year$Resident[1])) paste0("Shout out to **", top_res_year$Resident[1], "** for doing so many")``r if(nrow(top_res_4wk) > 0 && !is.na(top_res_4wk$Resident[1])) paste0(", and congratulations to **", top_res_4wk$Resident[1], "** for being the leader of the last 4 weeks!")`
 
-📝 [Submit Resident Assessment](https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud)
+Faculty assessment can be done [here](https://fbuckhold3-imslu-facultyeval.share.connect.posit.cloud).
 
-### For Residents
+### 🏆 Top Residents - Faculty Evaluations - Academic Year
 
-📝 [Submit Faculty Evaluation](https://fbuckhold3-imslu-facultyeval.share.connect.posit.cloud)
+```{r top-res-year-table}
+top_res_year_full <- get_top_residents_fac_eval(res_data, academic_year_start, top_n = 5)
+kable(top_res_year_full, align = c('l', 'r'))
+```
 
-📝 [Submit Attendance at Noon Conference](https://fbuckhold3-imslu-at-noon.share.connect.posit.cloud)
+### 🏆 Top Residents - Faculty Evaluations - Last 4 Weeks
+
+```{r top-res-4wk-table}
+top_res_4wk_full <- get_top_residents_fac_eval(res_data, four_weeks_ago, top_n = 5)
+kable(top_res_4wk_full, align = c('l', 'r'))
+```
 
 ---
 
