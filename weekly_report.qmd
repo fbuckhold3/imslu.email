@@ -10,6 +10,10 @@ execute:
   echo: false
   warning: false
   message: false
+email:
+  to: Fred.buckhold@slucare.ssmhealth.com
+  subject: "IMSLU Weekly Assessment Report"
+  attach-output: true
 ---
 
 ```{r setup, message=FALSE, warning=FALSE}
