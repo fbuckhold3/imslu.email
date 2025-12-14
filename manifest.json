@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "locale": "en_US.UTF-8",
+  "metadata": {
+    "appmode": "quarto-static",
+    "entrypoint": "weekly_report.qmd",
+    "content_category": "document",
+    "has_parameters": false
+  },
+  "quarto": {
+    "version": "1.4.0",
+    "engines": ["knitr"]
+  },
+  "packages": {
+    "R": [
+      {
+        "package": "httr",
+        "version": "1.4.7",
+        "repository": "CRAN"
+      },
+      {
+        "package": "dplyr",
+        "version": "1.1.4",
+        "repository": "CRAN"
+      },
+      {
+        "package": "knitr",
+        "version": "1.48",
+        "repository": "CRAN"
+      },
+      {
+        "package": "ggplot2",
+        "version": "3.5.1",
+        "repository": "CRAN"
+      },
+      {
+        "package": "htmltools",
+        "version": "0.5.8",
+        "repository": "CRAN"
+      },
+      {
+        "package": "rmarkdown",
+        "version": "2.27",
+        "repository": "CRAN"
+      },
+      {
+        "package": "jsonlite",
+        "version": "1.8.8",
+        "repository": "CRAN"
+      },
+      {
+        "package": "curl",
+        "version": "5.2.1",
+        "repository": "CRAN"
+      }
+    ]
+  },
+  "files": {
+    "weekly_report.qmd": {
+      "checksum": "0"
+    },
+    "R/fetch_redcap_data.R": {
+      "checksum": "0"
+    },
+    "R/utils.R": {
+      "checksum": "0"
+    },
+    "R/get_email_list.R": {
+      "checksum": "0"
+    }
+  },
+  "users": null,
+  "platform": "4.4.0"
+}
