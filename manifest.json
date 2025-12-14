@@ -3,70 +3,78 @@
   "locale": "en_US.UTF-8",
   "metadata": {
     "appmode": "quarto-static",
-    "entrypoint": "weekly_report.qmd",
-    "content_category": "document",
-    "has_parameters": false
+    "entrypoint": "weekly_report.qmd"
   },
   "quarto": {
     "version": "1.4.0",
-    "engines": ["knitr"]
+    "engines": [
+      "knitr"
+    ]
   },
   "packages": {
     "R": [
       {
-        "package": "httr",
-        "version": "1.4.7",
-        "repository": "CRAN"
+        "Source": "CRAN",
+        "Repository": "https://cran.rstudio.com/",
+        "description": {
+          "Package": "httr",
+          "Version": "1.4.7"
+        }
       },
       {
-        "package": "dplyr",
-        "version": "1.1.4",
-        "repository": "CRAN"
+        "Source": "CRAN",
+        "Repository": "https://cran.rstudio.com/",
+        "description": {
+          "Package": "dplyr",
+          "Version": "1.1.4"
+        }
       },
       {
-        "package": "knitr",
-        "version": "1.48",
-        "repository": "CRAN"
+        "Source": "CRAN",
+        "Repository": "https://cran.rstudio.com/",
+        "description": {
+          "Package": "knitr",
+          "Version": "1.48"
+        }
       },
       {
-        "package": "ggplot2",
-        "version": "3.5.1",
-        "repository": "CRAN"
+        "Source": "CRAN",
+        "Repository": "https://cran.rstudio.com/",
+        "description": {
+          "Package": "ggplot2",
+          "Version": "3.5.1"
+        }
       },
       {
-        "package": "htmltools",
-        "version": "0.5.8",
-        "repository": "CRAN"
+        "Source": "CRAN",
+        "Repository": "https://cran.rstudio.com/",
+        "description": {
+          "Package": "htmltools",
+          "Version": "0.5.8"
+        }
       },
       {
-        "package": "rmarkdown",
-        "version": "2.27",
-        "repository": "CRAN"
-      },
-      {
-        "package": "jsonlite",
-        "version": "1.8.8",
-        "repository": "CRAN"
-      },
-      {
-        "package": "curl",
-        "version": "5.2.1",
-        "repository": "CRAN"
+        "Source": "CRAN",
+        "Repository": "https://cran.rstudio.com/",
+        "description": {
+          "Package": "rmarkdown",
+          "Version": "2.27"
+        }
       }
     ]
   },
   "files": {
     "weekly_report.qmd": {
-      "checksum": "0"
+      "checksum": ""
     },
     "R/fetch_redcap_data.R": {
-      "checksum": "0"
+      "checksum": ""
     },
     "R/utils.R": {
-      "checksum": "0"
+      "checksum": ""
     },
     "R/get_email_list.R": {
-      "checksum": "0"
+      "checksum": ""
     }
   },
   "users": null,
