@@ -10,10 +10,6 @@ execute:
   echo: false
   warning: false
   message: false
-email:
-  to: Fred.buckhold@slucare.ssmhealth.com
-  subject: "IMSLU Weekly Assessment Report"
-  attach-output: true
 ---
 
 ```{r setup, message=FALSE, warning=FALSE}
@@ -22,6 +18,7 @@ library(dplyr)
 library(knitr)
 library(ggplot2)
 library(htmltools)
+library(blastula)
 
 # Source helper functions
 source("R/fetch_redcap_data.R")
@@ -331,3 +328,61 @@ kable(top_res_4wk_full, align = c('l', 'r'))
 
 *Questions or issues? Contact your program administrator.*
 </div>
+
+```{r send-email, include=FALSE}
+# Send email using blastula (only when running on Posit Connect)
+if (Sys.getenv("RSTUDIO_PRODUCT") == "CONNECT") {
+
+  # For testing: single recipient
+  # For production: use get_email_list() to get all faculty and residents
+  email_recipients <- "Fred.buckhold@slucare.ssmhealth.com"
+
+  # Uncomment this line for production to email all faculty and residents:
+  # source("R/get_email_list.R")
+  # email_recipients <- get_email_list()
+
+  # Create email body from the {.email} block content
+  email_body <- md(sprintf("
+## Weekly Residency Program Report
+
+This week's assessment report for the IMSLU Residency Program includes:
+
+- **Faculty Assessments**: %d assessments completed in the last 4 weeks
+- **Academic Year Total**: %d assessments completed since %s
+
+The full detailed report is attached.
+
+**Quick Links:**
+- [Submit Resident Assessment](https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud)
+- [Submit Faculty Evaluation](https://fbuckhold3-imslu-facultyeval.share.connect.posit.cloud)
+- [Submit Attendance at Noon Conference](https://fbuckhold3-imslu-at-noon.share.connect.posit.cloud)
+
+---
+
+*Report generated on: %s*
+",
+    total_assessments_4wk,
+    total_assessments_year,
+    format(academic_year_start, "%B %Y"),
+    format(Sys.Date(), "%B %d, %Y")
+  ))
+
+  # Create email
+  email <- compose_email(body = email_body)
+
+  # Attach the rendered HTML report
+  email <- add_attachment(
+    email,
+    file = "weekly_report.html"
+  )
+
+  # Send email via Posit Connect's email service
+  email %>%
+    smtp_send(
+      to = email_recipients,
+      from = "noreply@posit.cloud",
+      subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
+      credentials = connect_credentials()
+    )
+}
+```
