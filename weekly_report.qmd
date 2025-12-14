@@ -18,7 +18,6 @@ library(dplyr)
 library(knitr)
 library(ggplot2)
 library(htmltools)
-library(blastula)
 
 # Source helper functions
 source("R/fetch_redcap_data.R")
@@ -330,59 +329,57 @@ kable(top_res_4wk_full, align = c('l', 'r'))
 </div>
 
 ```{r send-email, include=FALSE}
-# Send email using blastula (only when running on Posit Connect)
+# Configure email delivery for Posit Connect (only when running on Connect)
 if (Sys.getenv("RSTUDIO_PRODUCT") == "CONNECT") {
 
   # For testing: single recipient
   # For production: use get_email_list() to get all faculty and residents
   email_recipients <- "Fred.buckhold@slucare.ssmhealth.com"
 
-  # Uncomment this line for production to email all faculty and residents:
+  # Uncomment these lines for production to email all faculty and residents:
   # source("R/get_email_list.R")
   # email_recipients <- get_email_list()
 
-  # Create email body from the {.email} block content
-  email_body <- md(sprintf("
-## Weekly Residency Program Report
+  # Create email body HTML
+  email_body_html <- sprintf("
+<h2>Weekly Residency Program Report</h2>
 
-This week's assessment report for the IMSLU Residency Program includes:
+<p>This week's assessment report for the IMSLU Residency Program includes:</p>
 
-- **Faculty Assessments**: %d assessments completed in the last 4 weeks
-- **Academic Year Total**: %d assessments completed since %s
+<ul>
+<li><strong>Faculty Assessments</strong>: %d assessments completed in the last 4 weeks</li>
+<li><strong>Academic Year Total</strong>: %d assessments completed since %s</li>
+</ul>
 
-The full detailed report is attached.
+<p>The full detailed report is attached.</p>
 
-**Quick Links:**
-- [Submit Resident Assessment](https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud)
-- [Submit Faculty Evaluation](https://fbuckhold3-imslu-facultyeval.share.connect.posit.cloud)
-- [Submit Attendance at Noon Conference](https://fbuckhold3-imslu-at-noon.share.connect.posit.cloud)
+<p><strong>Quick Links:</strong></p>
+<ul>
+<li><a href='https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud'>Submit Resident Assessment</a></li>
+<li><a href='https://fbuckhold3-imslu-facultyeval.share.connect.posit.cloud'>Submit Faculty Evaluation</a></li>
+<li><a href='https://fbuckhold3-imslu-at-noon.share.connect.posit.cloud'>Submit Attendance at Noon Conference</a></li>
+</ul>
 
----
-
-*Report generated on: %s*
+<hr>
+<p><em>Report generated on: %s</em></p>
 ",
     total_assessments_4wk,
     total_assessments_year,
     format(academic_year_start, "%B %Y"),
     format(Sys.Date(), "%B %d, %Y")
-  ))
-
-  # Create email
-  email <- compose_email(body = email_body)
-
-  # Attach the rendered HTML report
-  email <- add_attachment(
-    email,
-    file = "weekly_report.html"
   )
 
-  # Send email via Posit Connect's email service
-  email %>%
-    smtp_send(
-      to = email_recipients,
-      from = "noreply@posit.cloud",
-      subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
-      credentials = connect_credentials()
-    )
+  # Configure Posit Connect email metadata
+  rmarkdown::output_metadata$set(
+    rsc_email_subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
+    rsc_email_body_html = email_body_html,
+    rsc_email_images = FALSE,
+    rsc_email_suppress_report_attachment = FALSE,
+    rsc_email_suppress_scheduled = FALSE,
+    rsc_output_files = list()
+  )
+
+  # Set email recipients as an environment variable for Connect to use
+  Sys.setenv(RSC_EMAIL_TO = paste(email_recipients, collapse = ","))
 }
 ```
