@@ -22,6 +22,7 @@ library(dplyr)
 library(knitr)
 library(ggplot2)
 library(htmltools)
+library(blastula)
 
 # Source helper functions
 source("R/fetch_redcap_data.R")
@@ -333,7 +334,7 @@ kable(top_res_4wk_full, align = c('l', 'r'))
 </div>
 
 ```{r send-email, include=FALSE}
-# Configure email delivery for Posit Connect Cloud
+# Send email using blastula for Posit Connect Cloud
 if (Sys.getenv("RSTUDIO_PRODUCT") == "CONNECT") {
 
   # For testing: single recipient
@@ -344,49 +345,43 @@ if (Sys.getenv("RSTUDIO_PRODUCT") == "CONNECT") {
   # source("R/get_email_list.R")
   # email_recipients <- get_email_list()
 
-  # Create email body HTML
-  email_body_html <- sprintf("
-<h2>Weekly Residency Program Report</h2>
+  # Create email body using blastula
+  email_body <- md(sprintf("
+## Weekly Residency Program Report
 
-<p>This week's assessment report for the IMSLU Residency Program includes:</p>
+This week's assessment report for the IMSLU Residency Program includes:
 
-<ul>
-<li><strong>Faculty Assessments</strong>: %d assessments completed in the last 4 weeks</li>
-<li><strong>Academic Year Total</strong>: %d assessments completed since %s</li>
-</ul>
+- **Faculty Assessments**: %d assessments completed in the last 4 weeks
+- **Academic Year Total**: %d assessments completed since %s
 
-<p>The full detailed report is attached.</p>
+The full detailed report is attached.
 
-<p><strong>Quick Links:</strong></p>
-<ul>
-<li><a href='https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud'>Submit Resident Assessment</a></li>
-<li><a href='https://fbuckhold3-imslu-facultyeval.share.connect.posit.cloud'>Submit Faculty Evaluation</a></li>
-<li><a href='https://fbuckhold3-imslu-at-noon.share.connect.posit.cloud'>Submit Attendance at Noon Conference</a></li>
-</ul>
+**Quick Links:**
+- [Submit Resident Assessment](https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud)
+- [Submit Faculty Evaluation](https://fbuckhold3-imslu-facultyeval.share.connect.posit.cloud)
+- [Submit Attendance at Noon Conference](https://fbuckhold3-imslu-at-noon.share.connect.posit.cloud)
 
-<hr>
-<p><em>Report generated on: %s</em></p>
+---
+
+*Report generated on: %s*
 ",
     total_assessments_4wk,
     total_assessments_year,
-    format(academic_year_start, "%%B %%Y"),
-    format(Sys.Date(), "%%B %%d, %%Y")
-  )
+    format(academic_year_start, "%B %Y"),
+    format(Sys.Date(), "%B %d, %Y")
+  ))
 
-  # Configure Posit Connect Cloud email using all available metadata options
-  rmarkdown::output_metadata$set(
-    rsc_email_subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
-    rsc_email_body_html = email_body_html,
-    rsc_email_images = FALSE,
-    rsc_email_suppress_report_attachment = FALSE,
-    rsc_email_suppress_scheduled = FALSE,
-    rsc_email_attachments = list(),
-    rsc_output_files = list(),
-    # Add recipients directly to metadata
-    rsc_email_to = paste(email_recipients, collapse = ",")
-  )
+  # Use render_connect_email for Posit Connect Cloud
+  render_connect_email(input = "weekly_report.html") %>%
+    attach_connect_email(
+      subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
+      attach_output = TRUE,
+      attachments = c("weekly_report.html")
+    )
 
-  # Also try writing to .email_to file for Connect Cloud
-  writeLines(email_recipients, ".email_to")
+  # Suppress the output attachment if blastula is handling it
+  suppressMessages({
+    blastula::suppress_scheduled_email(FALSE)
+  })
 }
 ```
