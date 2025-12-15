@@ -19,7 +19,6 @@ library(dplyr)
 library(knitr)
 library(ggplot2)
 library(htmltools)
-library(blastula)
 
 # Source helper functions
 source("R/fetch_redcap_data.R")
@@ -330,47 +329,3 @@ kable(top_res_4wk_full, align = c('l', 'r'))
 *Questions or issues? Contact your program administrator.*
 </div>
 
-```{r send-email, include=FALSE}
-# Configure email delivery for Posit Connect Cloud using blastula
-# For testing: single recipient
-email_recipients <- "Fred.buckhold@slucare.ssmhealth.com"
-
-# For production: uncomment these lines to email all faculty and residents
-# source("R/get_email_list.R")
-# email_recipients <- get_email_list()
-
-# Create a simple email body
-email_body <- compose_email(
-  body = md(sprintf("
-# IMSLU Weekly Assessment Report - %s
-
-Your weekly residency program assessment report is ready.
-
-**Report Summary:**
-- Faculty Assessments (4 weeks): %d
-- Academic Year Total: %d (since %s)
-
-Please see the attached HTML report for full details including charts and tables.
-
----
-*This is an automated email from the IMSLU Residency Program reporting system.*
-",
-    format(Sys.Date(), "%%B %%d, %%Y"),
-    total_assessments_4wk,
-    total_assessments_year,
-    format(academic_year_start, "%%B %%Y")
-  ))
-)
-
-# Configure for Posit Connect Cloud with email recipients
-suppressMessages({
-  email_body %>%
-    attach_connect_email(
-      subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
-      attach_output = TRUE
-    )
-})
-
-# Set recipients via output metadata
-rmarkdown::output_metadata$set(rsc_email_to = email_recipients)
-```
