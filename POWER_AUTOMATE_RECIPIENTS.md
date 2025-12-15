@@ -50,8 +50,11 @@ Fetches email lists directly from REDCap, filtering out archived residents autom
      - Value: `application/x-www-form-urlencoded`
    - **Body**:
      ```
-     token=YOUR_FACULTY_API_TOKEN&content=record&format=json&type=flat&fields[]=fac_email
+     token=YOUR_FACULTY_API_TOKEN&content=record&format=json&type=flat&fields[]=fac_email&filterLogic=[archived]<>"1"
      ```
+
+     **This filters out faculty where `archived=1` (keeping only active faculty)**
+
      (Replace `YOUR_FACULTY_API_TOKEN` with your actual token)
 
 4. **Rename this action**: Click the **...** menu → **Rename** → "Get Faculty Emails"
@@ -83,18 +86,29 @@ Fetches email lists directly from REDCap, filtering out archived residents autom
    - **Headers**:
      - Key: `Content-Type`
      - Value: `application/x-www-form-urlencoded`
-   - **Body** (update `FIELD_NAME` based on your database):
+   - **Body**:
      ```
-     token=YOUR_RESIDENT_API_TOKEN&content=record&format=json&type=flat&fields[]=email&filterLogic=[archived]="0"
+     token=YOUR_RESIDENT_API_TOKEN&content=record&format=json&type=flat&fields[]=email&filterLogic=[res_archive]<>"1"
      ```
 
-     **Replace `[archived]="0"` with your actual filter logic. Common examples:**
-     - If you have an `archived` field: `[archived]="0"` or `[archived]=""`
-     - If you have a `status` field: `[status]="active"`
-     - If you have an `active` field: `[active]="1"`
-     - For multiple conditions: `[archived]="" AND [status]="active"`
+     **This filters out residents where `res_archive=1` (keeping only active residents)**
+
+     (Replace `YOUR_RESIDENT_API_TOKEN` with your actual token)
 
 4. **Rename this action**: "Get Active Resident Emails"
+
+5. Click **+ New step**
+6. Search for **Parse JSON** and select it
+7. Configure:
+   - **Content**: Click in the box → Select **Body** from "Get Active Resident Emails"
+   - **Schema**: Click "Use sample payload to generate schema" and paste:
+     ```json
+     [
+       {"email": "resident1@example.com"},
+       {"email": "resident2@example.com"}
+     ]
+     ```
+8. Click **Done**
 
 **Method B: Filter in Power Automate**
 
@@ -107,9 +121,9 @@ If filterLogic doesn't work or you need complex filtering:
    - **Headers**: Same as above
    - **Body**:
      ```
-     token=YOUR_RESIDENT_API_TOKEN&content=record&format=json&type=flat&fields[]=email&fields[]=archived
+     token=YOUR_RESIDENT_API_TOKEN&content=record&format=json&type=flat&fields[]=email&fields[]=res_archive
      ```
-     (Include the archived/status field)
+     (Include the res_archive field)
 
 3. Click **+ New step**
 4. Search for **Parse JSON** and add it
@@ -117,7 +131,7 @@ If filterLogic doesn't work or you need complex filtering:
 6. Search for **Filter array** and select it
 7. Configure:
    - **From**: Select the parsed JSON array
-   - **Condition**: `archived` is equal to `0` (or whatever indicates active)
+   - **Condition**: `res_archive` is not equal to `1`
 
 #### Step 4: Extract Email Addresses
 
@@ -163,14 +177,16 @@ In your "Send an email" action:
 
 ---
 
-## What field indicates archived residents?
+## Your Specific Configuration
 
-Please provide:
-1. The field name in REDCap that indicates if a resident is archived
-2. What value that field has for:
-   - Active residents: (e.g., `0`, `""`, `"active"`)
-   - Archived residents: (e.g., `1`, `"archived"`)
+**Faculty:**
+- Archive field: `archived`
+- Archived value: `1` (excluded)
+- Filter: `[archived]<>"1"`
 
-This will help me provide the exact filterLogic string for your setup.
+**Residents:**
+- Archive field: `res_archive`
+- Archived value: `1` (excluded)
+- Filter: `[res_archive]<>"1"`
 
-Alternatively, if you have Outlook groups already set up, just let me know the group email addresses and we can skip the REDCap complexity!
+These filters are already included in the REDCap API examples above!
