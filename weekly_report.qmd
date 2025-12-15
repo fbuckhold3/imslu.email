@@ -1,6 +1,10 @@
 ---
 title: "IMSLU Residency Program Weekly Assessment Report"
+author: "IMSLU Residency Program"
 format:
+  email:
+    toc: false
+    theme: cosmo
   html:
     toc: true
     toc-depth: 2
