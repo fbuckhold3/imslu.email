@@ -331,52 +331,33 @@ kable(top_res_4wk_full, align = c('l', 'r'))
 </div>
 
 ```{r send-email, include=FALSE}
-# Configure email delivery for Posit Connect Cloud using blastula
+# Configure email delivery for Posit Connect Cloud
 # For testing: single recipient
-# For production: use get_email_list() to get all faculty and residents
 email_recipients <- "Fred.buckhold@slucare.ssmhealth.com"
 
-# Uncomment these lines for production to email all faculty and residents:
+# For production: uncomment these lines to email all faculty and residents
 # source("R/get_email_list.R")
 # email_recipients <- get_email_list()
 
-# Create email body using blastula
-email_body <- md(sprintf("
-## Weekly Residency Program Report
-
-This week's assessment report for the IMSLU Residency Program includes:
-
-- **Faculty Assessments**: %d assessments completed in the last 4 weeks
-- **Academic Year Total**: %d assessments completed since %s
-
-The full detailed report with charts and tables is attached.
-
-**Quick Links:**
-- [Submit Resident Assessment](https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud)
-- [Submit Faculty Evaluation](https://fbuckhold3-imslu-facultyeval.share.connect.posit.cloud)
-- [Submit Attendance at Noon Conference](https://fbuckhold3-imslu-at-noon.share.connect.posit.cloud)
-
----
-
-*Report generated on: %s*
-",
-    total_assessments_4wk,
-    total_assessments_year,
-    format(academic_year_start, "%%B %%Y"),
-    format(Sys.Date(), "%%B %%d, %%Y")
-))
+# Configure email for Posit Connect Cloud
+suppressMessages({
+  blastula::attach_connect_email(
+    subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
+    attach_output = TRUE,
+    attachments = NULL
+  )
+})
 
 # Set email recipients via output metadata
 rmarkdown::output_metadata$set(
-  rsc_email_recipients = email_recipients
+  rsc_email_subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
+  rsc_email_body_html = "weekly_report.html",
+  rsc_email_images = FALSE,
+  rsc_output_files = list("weekly_report.html"),
+  rsc_email_suppress_scheduled = FALSE,
+  rsc_email_suppress_report_attachment = FALSE
 )
 
-# Compose email and configure for Posit Connect Cloud
-suppressMessages({
-  compose_email(body = email_body) %>%
-    attach_connect_email(
-      subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
-      attach_output = TRUE
-    )
-})
+# Set recipients
+Sys.setenv(CONNECT_EMAIL_TO = email_recipients)
 ```
