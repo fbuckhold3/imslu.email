@@ -334,7 +334,7 @@ kable(top_res_4wk_full, align = c('l', 'r'))
 </div>
 
 ```{r send-email, include=FALSE}
-# Send email using blastula for Posit Connect Cloud
+# Configure email delivery for Posit Connect Cloud using blastula
 if (Sys.getenv("RSTUDIO_PRODUCT") == "CONNECT") {
 
   # For testing: single recipient
@@ -354,7 +354,7 @@ This week's assessment report for the IMSLU Residency Program includes:
 - **Faculty Assessments**: %d assessments completed in the last 4 weeks
 - **Academic Year Total**: %d assessments completed since %s
 
-The full detailed report is attached.
+The full detailed report with charts and tables is attached.
 
 **Quick Links:**
 - [Submit Resident Assessment](https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud)
@@ -367,21 +367,17 @@ The full detailed report is attached.
 ",
     total_assessments_4wk,
     total_assessments_year,
-    format(academic_year_start, "%B %Y"),
-    format(Sys.Date(), "%B %d, %Y")
+    format(academic_year_start, "%%B %%Y"),
+    format(Sys.Date(), "%%B %%d, %%Y")
   ))
 
-  # Use render_connect_email for Posit Connect Cloud
-  render_connect_email(input = "weekly_report.html") %>%
-    attach_connect_email(
-      subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
-      attach_output = TRUE,
-      attachments = c("weekly_report.html")
-    )
-
-  # Suppress the output attachment if blastula is handling it
+  # Compose email and configure for Posit Connect Cloud
   suppressMessages({
-    blastula::suppress_scheduled_email(FALSE)
+    compose_email(body = email_body) %>%
+      attach_connect_email(
+        subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
+        attach_output = TRUE
+      )
   })
 }
 ```
