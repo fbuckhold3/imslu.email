@@ -333,7 +333,7 @@ kable(top_res_4wk_full, align = c('l', 'r'))
 </div>
 
 ```{r send-email, include=FALSE}
-# Configure email delivery for Posit Connect (only when running on Connect)
+# Configure email delivery for Posit Connect Cloud
 if (Sys.getenv("RSTUDIO_PRODUCT") == "CONNECT") {
 
   # For testing: single recipient
@@ -369,21 +369,24 @@ if (Sys.getenv("RSTUDIO_PRODUCT") == "CONNECT") {
 ",
     total_assessments_4wk,
     total_assessments_year,
-    format(academic_year_start, "%B %Y"),
-    format(Sys.Date(), "%B %d, %Y")
+    format(academic_year_start, "%%B %%Y"),
+    format(Sys.Date(), "%%B %%d, %%Y")
   )
 
-  # Configure Posit Connect email metadata
+  # Configure Posit Connect Cloud email using all available metadata options
   rmarkdown::output_metadata$set(
     rsc_email_subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
     rsc_email_body_html = email_body_html,
     rsc_email_images = FALSE,
     rsc_email_suppress_report_attachment = FALSE,
     rsc_email_suppress_scheduled = FALSE,
-    rsc_output_files = list()
+    rsc_email_attachments = list(),
+    rsc_output_files = list(),
+    # Add recipients directly to metadata
+    rsc_email_to = paste(email_recipients, collapse = ",")
   )
 
-  # Set email recipients as an environment variable for Connect to use
-  Sys.setenv(RSC_EMAIL_TO = paste(email_recipients, collapse = ","))
+  # Also try writing to .email_to file for Connect Cloud
+  writeLines(email_recipients, ".email_to")
 }
 ```
