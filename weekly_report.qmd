@@ -332,18 +332,16 @@ kable(top_res_4wk_full, align = c('l', 'r'))
 
 ```{r send-email, include=FALSE}
 # Configure email delivery for Posit Connect Cloud using blastula
-if (Sys.getenv("RSTUDIO_PRODUCT") == "CONNECT") {
+# For testing: single recipient
+# For production: use get_email_list() to get all faculty and residents
+email_recipients <- "Fred.buckhold@slucare.ssmhealth.com"
 
-  # For testing: single recipient
-  # For production: use get_email_list() to get all faculty and residents
-  email_recipients <- "Fred.buckhold@slucare.ssmhealth.com"
+# Uncomment these lines for production to email all faculty and residents:
+# source("R/get_email_list.R")
+# email_recipients <- get_email_list()
 
-  # Uncomment these lines for production to email all faculty and residents:
-  # source("R/get_email_list.R")
-  # email_recipients <- get_email_list()
-
-  # Create email body using blastula
-  email_body <- md(sprintf("
+# Create email body using blastula
+email_body <- md(sprintf("
 ## Weekly Residency Program Report
 
 This week's assessment report for the IMSLU Residency Program includes:
@@ -366,20 +364,19 @@ The full detailed report with charts and tables is attached.
     total_assessments_year,
     format(academic_year_start, "%%B %%Y"),
     format(Sys.Date(), "%%B %%d, %%Y")
-  ))
+))
 
-  # Set email recipients via output metadata
-  rmarkdown::output_metadata$set(
-    rsc_email_recipients = email_recipients
-  )
+# Set email recipients via output metadata
+rmarkdown::output_metadata$set(
+  rsc_email_recipients = email_recipients
+)
 
-  # Compose email and configure for Posit Connect Cloud
-  suppressMessages({
-    compose_email(body = email_body) %>%
-      attach_connect_email(
-        subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
-        attach_output = TRUE
-      )
-  })
-}
+# Compose email and configure for Posit Connect Cloud
+suppressMessages({
+  compose_email(body = email_body) %>%
+    attach_connect_email(
+      subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
+      attach_output = TRUE
+    )
+})
 ```
