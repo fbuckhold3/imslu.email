@@ -38,19 +38,17 @@ The Power Automate flow will:
 2. Search for and select **HTTP** action
 3. Configure:
    - **Method**: GET
-   - **URI**: `https://your-connect-cloud-url.posit.cloud/content/your-content-id/weekly_report.html`
-   - **Authentication**: None (if public) or Basic (if requires login)
+   - **URI**: `https://019b1858-834c-987a-ee25-a5e13dabef9b.share.connect.posit.cloud/weekly_report.html`
+   - **Authentication**: None (since it's publicly accessible)
 
-   **Finding your report URL:**
-   - Go to your deployed report on Posit Connect Cloud
-   - Copy the full URL from the browser
-   - Make sure it ends in `/weekly_report.html` or the direct file path
+   **Your specific report URL:**
+   - Base URL: `https://019b1858-834c-987a-ee25-a5e13dabef9b.share.connect.posit.cloud`
+   - Full report: `https://019b1858-834c-987a-ee25-a5e13dabef9b.share.connect.posit.cloud/weekly_report.html`
 
-4. Click **Show advanced options**
-   - If your report requires authentication, add:
-     - **Authentication**: Basic
-     - **Username**: Your Connect Cloud username
-     - **Password**: Your Connect Cloud API key
+4. **Note**: If the report is not public and requires login, click **Show advanced options** and add:
+   - **Authentication**: Basic
+   - **Username**: Your Connect Cloud username
+   - **Password**: Your Connect Cloud API key
 
 ### Step 3: Option A - Get Recipients from REDCap API
 
