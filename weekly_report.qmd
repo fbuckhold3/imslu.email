@@ -19,7 +19,6 @@ library(dplyr)
 library(knitr)
 library(ggplot2)
 library(htmltools)
-library(blastula)
 
 # Source helper functions
 source("R/fetch_redcap_data.R")
@@ -339,25 +338,14 @@ email_recipients <- "Fred.buckhold@slucare.ssmhealth.com"
 # source("R/get_email_list.R")
 # email_recipients <- get_email_list()
 
-# Configure email for Posit Connect Cloud
-suppressMessages({
-  blastula::attach_connect_email(
-    subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
-    attach_output = TRUE,
-    attachments = NULL
-  )
-})
-
-# Set email recipients via output metadata
+# Set email configuration via output metadata (Posit Connect Cloud method)
 rmarkdown::output_metadata$set(
   rsc_email_subject = sprintf("IMSLU Weekly Assessment Report - %s", format(Sys.Date(), "%B %d, %Y")),
   rsc_email_body_html = "weekly_report.html",
-  rsc_email_images = FALSE,
-  rsc_output_files = list("weekly_report.html"),
-  rsc_email_suppress_scheduled = FALSE,
-  rsc_email_suppress_report_attachment = FALSE
+  rsc_email_attachments = list("weekly_report.html"),
+  rsc_email_suppress_scheduled = FALSE
 )
 
-# Set recipients
+# Set recipients via environment variable
 Sys.setenv(CONNECT_EMAIL_TO = email_recipients)
 ```
