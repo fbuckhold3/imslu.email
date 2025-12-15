@@ -371,6 +371,11 @@ The full detailed report with charts and tables is attached.
     format(Sys.Date(), "%%B %%d, %%Y")
   ))
 
+  # Set email recipients via output metadata
+  rmarkdown::output_metadata$set(
+    rsc_email_recipients = email_recipients
+  )
+
   # Compose email and configure for Posit Connect Cloud
   suppressMessages({
     compose_email(body = email_body) %>%
