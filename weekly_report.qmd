@@ -68,21 +68,6 @@ top_res_4wk <- get_top_residents_fac_eval(res_data, four_weeks_ago, top_n = 1)
 IMSLU Weekly Assessment Report - `r format(Sys.Date(), "%B %d, %Y")`
 :::
 
-::: {.email}
-## Weekly Residency Program Report
-
-This week's assessment report for the IMSLU Residency Program includes:
-
-- **Faculty Assessments**: `r total_assessments_4wk` assessments completed in the last 4 weeks
-- **Academic Year Total**: `r total_assessments_year` assessments completed since `r format(academic_year_start, "%B %Y")`
-
-The full detailed report is attached below with charts, tables, and complete metrics.
-
-**Quick Links:**
-- [Submit Resident Assessment](https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud)
-- [Submit Faculty Evaluation](https://fbuckhold3-imslu-facultyeval.share.connect.posit.cloud)
-:::
-
 ---
 
 ## 🔗 Quick Links
