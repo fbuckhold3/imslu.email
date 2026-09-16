@@ -1,0 +1,168 @@
+---
+title: "Weekly Resident Review"
+format:
+  html:
+    embed-resources: true
+    theme: none
+    css: null
+execute:
+  echo: false
+  warning: false
+  message: false
+params:
+  record_id: NA
+  resident_name: "Resident"
+  rdm_token: NA
+  redcap_url: "https://redcapsurvey.slu.edu/api/"
+  digest_app_url: ""
+---
+
+```{r setup}
+library(httr)
+library(jsonlite)
+library(dplyr)
+library(knitr)
+suppressPackageStartupMessages({
+  library(gmed)
+  library(amiontools)
+})
+source("R/fetch_resident_digest_data.R")
+
+# Email rendering constraint (see fetch_resident_digest_data.R header): plain
+# HTML tables + inline styles only. No plotly/DT/htmlwidgets — Outlook and
+# most email clients don't run JavaScript, so an interactive widget would
+# render blank or broken for most residents.
+d <- build_resident_digest_data(
+  record_id      = params$record_id,
+  rdm_token      = params$rdm_token,
+  redcap_url     = params$redcap_url,
+  digest_app_url = params$digest_app_url
+)
+
+stat_box <- function(number, label, warn = FALSE) {
+  color <- if (warn) "#b8860b" else "#003d5c"
+  sprintf(
+    '<td style="padding:12px 18px; text-align:center; border:1px solid #e0e0e0;">
+       <div style="font-size:1.6rem; font-weight:700; color:%s;">%s</div>
+       <div style="font-size:0.75rem; color:#6c757d; margin-top:2px;">%s</div>
+     </td>', color, number, label)
+}
+
+action_link <- function(url, text) {
+  if (is.na(url)) return(sprintf('<p style="color:#6c757d; font-size:0.85rem;">%s (link unavailable — open the resident digest app directly)</p>', text))
+  sprintf('<p><a href="%s" style="background:#003d5c; color:#fff; padding:8px 16px; border-radius:4px; text-decoration:none; font-size:0.9rem;">%s &rarr;</a></p>', url, text)
+}
+```
+
+<div style="font-family: -apple-system, Segoe UI, Helvetica, Arial, sans-serif; max-width: 640px; margin: 0 auto; color:#212529;">
+
+<h2 style="color:#003d5c;">`r params$resident_name`'s Weekly Resident Review</h2>
+<p style="color:#6c757d; font-size:0.85rem;">Week of `r format(Sys.Date(), "%B %d, %Y")`</p>
+<p style="color:#212529; font-size:0.95rem;">As the week wraps up, here's a look at your duty hours, schedule, attendance, and evaluations — with a few quick things worth updating.</p>
+
+## Duty Hours
+
+<table style="border-collapse: collapse; width:100%;"><tr>
+```{r duty-stats}
+#| results: asis
+cat(stat_box(ifelse(is.na(d$duty$this_week_hours), "—", d$duty$this_week_hours), "Hours This Week"))
+cat(stat_box(ifelse(is.na(d$duty$rolling_4wk_avg), "—", d$duty$rolling_4wk_avg), "4-Week Avg / Week",
+             warn = isTRUE(d$duty$flag_80h)))
+```
+</tr></table>
+
+```{r duty-flag}
+#| results: asis
+if (isTRUE(d$duty$flag_80h))
+  cat('<p style="color:#b8860b; font-size:0.85rem;">⚠ Your 4-week rolling average is over 80 hours/week. Review your entries and talk to your program if this looks wrong.</p>')
+cat(action_link(d$duty$link, "Confirm or Log Duty Hours"))
+```
+
+## Your Schedule — Next Week
+
+```{r schedule-table}
+#| results: asis
+rows <- d$schedule$rows
+if (is.null(rows) || nrow(rows) == 0) {
+  cat('<p style="color:#6c757d; font-size:0.85rem;">No schedule found for next week yet.</p>')
+} else {
+  tbl <- rows |>
+    transmute(Date = format(Date, "%a %b %d"),
+              Rotation = coalesce(as.character(Rotation), ""))
+  cat(kable(tbl, format = "html", table.attr = 'style="width:100%; border-collapse:collapse;"',
+            row.names = FALSE))
+}
+```
+
+## Noon Conference Attendance
+
+<table style="border-collapse: collapse; width:100%;"><tr>
+```{r attendance-stats}
+#| results: asis
+cat(stat_box(ifelse(is.na(d$attendance$n_this_week), "—", d$attendance$n_this_week),
+             "Logged This Week"))
+```
+</tr></table>
+```{r attendance-link}
+#| results: asis
+cat(action_link(d$attendance$link, "Review or Add Attendance"))
+```
+
+## Evaluations & Feedback
+
+<table style="border-collapse: collapse; width:100%;"><tr>
+```{r eval-stats}
+#| results: asis
+cat(stat_box(ifelse(is.na(d$evals$n_received_week), "—", d$evals$n_received_week),
+             "Evaluations Received — Past Week"))
+cat(stat_box(ifelse(is.na(d$evals$n_completed_2wk), "—", d$evals$n_completed_2wk),
+             "Faculty Evals You've Done — Last 2 Weeks",
+             warn = !isTRUE(d$evals$completed_done_this_week)))
+```
+</tr></table>
+
+```{r eval-nudge}
+#| results: asis
+if (!isTRUE(d$evals$completed_done_this_week)) {
+  cat('<p style="font-size:0.85rem;">Haven\'t evaluated a faculty member this week? A couple minutes of feedback goes a long way.</p>')
+  cat(action_link(d$evals$link, "Evaluate a Faculty Member"))
+}
+if (is.na(d$evals$n_received_week) || d$evals$n_received_week == 0)
+  cat('<p style="font-size:0.85rem;">No evaluations received this week — consider asking a supervising faculty member for feedback.</p>')
+```
+
+## Peer Review
+
+<table style="border-collapse: collapse; width:100%;"><tr>
+```{r peer-stats}
+#| results: asis
+cat(stat_box(ifelse(is.na(d$peer$n_completed_2wk), "—", d$peer$n_completed_2wk),
+             "Peer Reviews Done — Last 2 Weeks", warn = !isTRUE(d$peer$done_this_week)))
+```
+</tr></table>
+
+```{r peer-teammates}
+#| results: asis
+tm <- d$peer$teammates
+if (!is.null(tm) && is.data.frame(tm) && nrow(tm) > 0) {
+  names_str <- paste(unique(tm$name), collapse = ", ")
+  cat(sprintf('<p style="font-size:0.85rem;">People you\'ve recently worked with (last 4 weeks): %s</p>', names_str))
+}
+if (!isTRUE(d$peer$done_this_week))
+  cat(action_link(d$peer$link, "Review a Peer"))
+```
+
+## Scholarship
+
+<p style="font-size:0.9rem;">Presented at noon conference, PCEC, or an afternoon-school session? Log it — every in-program presentation counts.</p>
+```{r schol-link}
+#| results: asis
+cat(action_link(d$scholarship_link, "Add Scholarship"))
+```
+
+<hr style="margin: 24px 0; border: none; border-top: 1px solid #e0e0e0;">
+<p style="font-size:0.75rem; color:#adb5bd;">
+Automated weekly digest — IMSLU Internal Medicine Residency.
+</p>
+
+</div>
