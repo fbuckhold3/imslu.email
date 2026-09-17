@@ -4,7 +4,6 @@ format:
   html:
     embed-resources: true
     theme: none
-    css: null
 execute:
   echo: false
   warning: false
