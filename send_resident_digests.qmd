@@ -1,0 +1,23 @@
+---
+title: "Resident Digest Send Job"
+format: html
+execute:
+  echo: true
+  warning: true
+  message: true
+---
+
+Scheduled job wrapper for `send_resident_digests.R`. Deploy and schedule
+*this file* on Posit Connect Cloud (Friday 3pm) — not
+`resident_weekly_digest.qmd` directly, which just renders one blank
+report with no recipients when Connect re-runs it on a schedule. The
+rendered HTML here is a log of the run, not a deliverable; the real work
+(render each resident's digest + POST to Power Automate) happens as a
+side effect of the chunk below.
+
+Required Connect environment variables on this content item: `RDM_TOKEN`,
+`REDCAP_URL`, `DIGEST_APP_URL`, `POWER_AUTOMATE_RESIDENT_URL`.
+
+```{r}
+source("send_resident_digests.R")
+```
