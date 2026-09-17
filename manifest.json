@@ -210,18 +210,18 @@
         "Config/roxygen2/version": "8.0.0",
         "Author": "Fred Buckhold [aut, cre]",
         "Maintainer": "Fred Buckhold <fbuckhold3@icloud.com>",
-        "Built": "R 4.6.0; ; 2026-09-17 14:28:55 UTC; unix",
+        "Built": "R 4.6.0; ; 2026-09-17 16:31:19 UTC; unix",
         "RemoteType": "github",
         "RemoteHost": "api.github.com",
         "RemoteUsername": "fbuckhold3",
         "RemoteRepo": "amiontools",
         "RemoteRef": "main",
-        "RemoteSha": "f855751f96f791497136f4dc00e99305b9919dd5",
+        "RemoteSha": "f81278a1c8f4c24f317926f42c14127a660342da",
         "GithubHost": "api.github.com",
         "GithubRepo": "amiontools",
         "GithubUsername": "fbuckhold3",
         "GithubRef": "main",
-        "GithubSHA1": "f855751f96f791497136f4dc00e99305b9919dd5"
+        "GithubSHA1": "f81278a1c8f4c24f317926f42c14127a660342da"
       }
     },
     "askpass": {
@@ -2942,7 +2942,7 @@
       "checksum": "34256341b1fd6543388f0a7d8c803845"
     },
     "R/fetch_resident_digest_data.R": {
-      "checksum": "4caf84608982d4e66216ed3ea6c4c1aa"
+      "checksum": "ec153179ebdf8d15241299952e9f31ab"
     },
     "R/utils.R": {
       "checksum": "7d0127bd1d91dec6a1c12b59c4dfce88"
@@ -2954,10 +2954,10 @@
       "checksum": "671dcfe6916d8398551963ba02059397"
     },
     "renv.lock": {
-      "checksum": "9e9a43d37f1b302c5bd5d5a4f7b1a47b"
+      "checksum": "3f956360d8e06e2e45944eeb10eb7803"
     },
     "resident_weekly_digest.qmd": {
-      "checksum": "e1fa4240f1432ff3687ef5e6665082c4"
+      "checksum": "6a46509df9d578e41994d1551d1ae654"
     },
     "send_faculty_reports.R": {
       "checksum": "228f28e80c3273d76d1037cdcc5f0aec"
