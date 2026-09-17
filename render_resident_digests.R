@@ -1,9 +1,12 @@
 # render_resident_digests.R
 #
-# Renders one self-contained HTML weekly digest per active resident and
-# writes a Power Automate manifest CSV — same shape/pattern as
-# imslu_faculty_dashboard/reports/render_all_reports.R (Fred's choice,
-# 2026-09-16), adapted for residents instead of faculty.
+# LOCAL PREVIEW/DRY-RUN TOOL — renders one self-contained HTML weekly digest
+# per active resident to disk plus a CSV summary, so you can eyeball output
+# before sending anything. This is NOT the send path: the real pipeline is
+# send_resident_digests.R, which renders + POSTs each digest directly to a
+# Power Automate HTTP trigger (mirroring send_faculty_reports.R) — no
+# SharePoint/manifest-CSV file drop involved. Use this script only to
+# render and inspect files locally.
 #
 # NEW DEPENDENCY: this script (and resident_weekly_digest.qmd) needs gmed +
 # amiontools, which imslu.email didn't depend on before. Flagged for Fred:
@@ -131,17 +134,12 @@ cat(sprintf("\n=== Done: %d succeeded, %d failed ===\n", n_ok, nrow(results) - n
 
 no_email <- results |> filter(status == "success", is.na(email) | email == "")
 if (nrow(no_email) > 0) {
-  cat(sprintf("\nWARNING: %d residents have no email — Power Automate will skip them:\n", nrow(no_email)))
+  cat(sprintf("\nWARNING: %d residents have no email on file:\n", nrow(no_email)))
   print(select(no_email, name), n = Inf)
 }
 
-# ── Write Power Automate manifest ──────────────────────────────────────────────
-# Column reference for the PA flow (mirrors imslu_faculty_dashboard's manifest):
-#   email       → To
-#   output_file → filename of the HTML attachment in the SharePoint folder
-#   name        → used in subject line / body text
-#   status      → filter rows to "success" before sending
-manifest_path <- file.path(out_dir, sprintf("pa_manifest_%s.csv", Sys.Date()))
+# ── Write summary CSV (for local review only — not read by any PA flow) ──────
+manifest_path <- file.path(out_dir, sprintf("render_summary_%s.csv", Sys.Date()))
 write_csv(results, manifest_path)
-cat(sprintf("\nManifest (for Power Automate): %s\n", manifest_path))
+cat(sprintf("\nSummary CSV: %s\n", manifest_path))
 cat(sprintf("Reports folder:               %s/\n", out_dir))
