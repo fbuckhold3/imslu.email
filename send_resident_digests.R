@@ -164,7 +164,9 @@ send_one_digest <- function(record_id, name, email) {
   )
 
   if (!is.null(resp) && httr::status_code(resp) >= 400) {
-    message(sprintf("  ERROR: PA returned HTTP %d for %s", httr::status_code(resp), name))
+    body_txt <- tryCatch(httr::content(resp, "text", encoding = "UTF-8"), error = function(e) "(no body)")
+    message(sprintf("  ERROR: PA returned HTTP %d for %s\n    %s",
+                    httr::status_code(resp), name, substr(body_txt, 1, 500)))
   }
 
   Sys.sleep(PA_DELAY_SEC)
