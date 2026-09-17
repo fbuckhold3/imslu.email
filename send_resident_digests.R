@@ -125,9 +125,19 @@ send_one_digest <- function(record_id, name, email) {
     return(invisible(NULL))
   }
 
-  html_b64  <- base64encode(outfile)
-  safe_name <- gsub("[^A-Za-z0-9]", "_", trimws(name))
-  filename  <- paste0(safe_name, "_Weekly_Resident_Review.html")
+  # Extract just our own content div (between the qmd's EMAIL_BODY markers)
+  # for the email body -- sending the whole rendered document (with its own
+  # <html>/<head>/<body>) as an email Body renders inconsistently across
+  # clients. See resident_weekly_digest.qmd for the marker comments.
+  rendered <- paste(readLines(outfile, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  m <- regmatches(rendered, regexpr(
+    "(?s)(?<=<!--EMAIL_BODY_START-->).*(?=<!--EMAIL_BODY_END-->)",
+    rendered, perl = TRUE))
+  if (length(m) == 0 || !nzchar(m)) {
+    message(sprintf("  ERROR: could not find EMAIL_BODY markers in rendered output for %s", name))
+    return(invisible(NULL))
+  }
+  html_body <- trimws(m)
 
   message(sprintf("  %-30s -> %s", name, email))
 
@@ -141,11 +151,10 @@ send_one_digest <- function(record_id, name, email) {
       PA_URL,
       httr::content_type_json(),
       body = jsonlite::toJSON(list(
-        to_email               = email,
-        resident_name          = name,
-        person_type            = "resident",
-        html_attachment_base64 = html_b64,
-        filename               = filename
+        to_email      = email,
+        resident_name = name,
+        person_type   = "resident",
+        html_body     = html_body
       ), auto_unbox = TRUE)
     ),
     error = function(e) {

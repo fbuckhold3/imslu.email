@@ -1,5 +1,5 @@
 ---
-title: "Weekly Resident Review"
+pagetitle: "Weekly Resident Review"
 format:
   html:
     embed-resources: true
@@ -59,6 +59,7 @@ action_link <- function(url, text) {
 RESIDENT_ASSESSMENT_URL <- "https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud"
 ```
 
+<!--EMAIL_BODY_START-->
 <div style="font-family: -apple-system, Segoe UI, Helvetica, Arial, sans-serif; max-width: 640px; margin: 0 auto; color:#212529;">
 
 <h2 style="color:#003d5c;">`r params$resident_name`'s Weekly Resident Review</h2>
@@ -181,3 +182,4 @@ Automated weekly digest — IMSLU Internal Medicine Residency.
 </p>
 
 </div>
+<!--EMAIL_BODY_END-->
