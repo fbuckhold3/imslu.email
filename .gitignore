@@ -2,7 +2,6 @@
 .Renviron
 .RData
 .Rhistory
-renv.lock
 
 # Quarto
 .quarto/
