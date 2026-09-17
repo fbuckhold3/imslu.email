@@ -20,20 +20,15 @@
 #' @param record_id RDM record_id.
 #' @param rdm_token,redcap_url REDCap credentials (test or prod — caller's
 #'   choice; render_resident_digests.R decides which).
-#' @param digest_app_url Base URL of the deployed imslu.resident.digest app
-#'   — each section link below appends `?section=<id>`. Pass "" to get
-#'   plain (non-hyperlinked) section names instead (useful for dry runs
-#'   before the app is deployed).
+#' @param digest_app_url Base URL of the deployed imslu.resident.digest app.
+#'   Not used by any per-domain field here — the .qmd links to it directly
+#'   via `params$digest_app_url` for its two generic "update your
+#'   information" buttons (Fred's call, 2026-09-17: per-section deep links
+#'   read as odd/redundant when they all open the same app).
 #' @return A named list — see inline comments for each element's shape.
 #' @export
 build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
                                        digest_app_url = "") {
-
-  link_to <- function(section) {
-    if (!nzchar(digest_app_url)) return(NA_character_)
-    paste0(digest_app_url, if (grepl("\\?", digest_app_url)) "&" else "?",
-           "section=", section)
-  }
 
   # ── Header info: access code + coach name (same fields the Shiny app's
   # roundsui_resident_panel() shows) ────────────────────────────────────────
@@ -57,11 +52,10 @@ build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
     list(
       this_week_hours   = if (!is.null(this_wk)) round(this_wk$Total_Hours, 1) else NA_real_,
       rolling_4wk_avg   = if (!is.null(this_wk)) round(this_wk$rolling_4wk_avg_hours, 1) else NA_real_,
-      flag_80h          = if (!is.null(this_wk)) isTRUE(this_wk$flag_80h) else FALSE,
-      link              = link_to("duty_hours")
+      flag_80h          = if (!is.null(this_wk)) isTRUE(this_wk$flag_80h) else FALSE
     )
   }, error = function(e) list(this_week_hours = NA_real_, rolling_4wk_avg = NA_real_,
-                              flag_80h = FALSE, link = link_to("duty_hours")))
+                              flag_80h = FALSE))
 
   # ── Upcoming week's schedule (next Mon-Sun) ───────────────────────────────
   schedule <- tryCatch({
@@ -99,8 +93,8 @@ build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
         n_this_week <- sum(dts >= week_start & dts <= today, na.rm = TRUE)
       }
     }
-    list(week_start = week_start, n_this_week = n_this_week, link = link_to("attendance"))
-  }, error = function(e) list(week_start = NA, n_this_week = NA_integer_, link = link_to("attendance")))
+    list(week_start = week_start, n_this_week = n_this_week)
+  }, error = function(e) list(week_start = NA, n_this_week = NA_integer_))
 
   # ── Evaluations received (past week) + completed (last 2 weeks) ─────────
   evals <- tryCatch({
@@ -111,10 +105,9 @@ build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
     completed_this_week <- gmed::count_recent_instances(rdm_token = rdm_token, redcap_url = redcap_url,
       record_id = record_id, instrument = "faculty_evaluation", date_field = "fac_eval_date", days = 7)
     list(n_received_week = received$n, n_completed_2wk = completed$n,
-         completed_done_this_week = completed_this_week$n > 0,
-         link = link_to("faculty_eval"))
+         completed_done_this_week = completed_this_week$n > 0)
   }, error = function(e) list(n_received_week = NA_integer_, n_completed_2wk = NA_integer_,
-                              completed_done_this_week = TRUE, link = link_to("faculty_eval")))
+                              completed_done_this_week = TRUE))
 
   # ── Peer reviews: completed (last 2 weeks) + recently worked with (4 wks) ─
   peer <- tryCatch({
@@ -125,9 +118,9 @@ build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
     teammates <- amiontools::get_recent_teammates(
       resident_id = record_id, rdm_token = rdm_token, redcap_url = redcap_url, days = 28)
     list(n_completed_2wk = completed$n, done_this_week = completed_this_week$n > 0,
-         teammates = teammates, link = link_to("peer_review"))
+         teammates = teammates)
   }, error = function(e) list(n_completed_2wk = NA_integer_, done_this_week = TRUE,
-                              teammates = data.frame(), link = link_to("peer_review")))
+                              teammates = data.frame()))
 
   list(
     record_id  = record_id,
@@ -136,7 +129,6 @@ build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
     schedule   = schedule,
     attendance = attendance,
     evals      = evals,
-    peer       = peer,
-    scholarship_link = link_to("scholarship")
+    peer       = peer
   )
 }

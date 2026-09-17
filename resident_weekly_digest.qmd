@@ -75,6 +75,12 @@ if (!is.na(d$resident$access_code) || !is.na(d$resident$coach_name)) {
 ```
 <p style="color:#212529; font-size:0.95rem;">As the week wraps up, here's a look at your duty hours, schedule, attendance, and evaluations — with a few quick things worth updating.</p>
 
+```{r top-cta}
+#| results: asis
+cat(action_link(if (nzchar(params$digest_app_url)) params$digest_app_url else NA_character_,
+                "Click Here to Update Your Information"))
+```
+
 ## Duty Hours
 
 <table style="border-collapse: collapse; width:100%;"><tr>
@@ -90,7 +96,6 @@ cat(stat_box(ifelse(is.na(d$duty$rolling_4wk_avg), "—", d$duty$rolling_4wk_avg
 #| results: asis
 if (isTRUE(d$duty$flag_80h))
   cat('<p style="color:#b8860b; font-size:0.85rem;">⚠ Your 4-week rolling average is over 80 hours/week. Review your entries and talk to your program if this looks wrong.</p>')
-cat(action_link(d$duty$link, "Confirm or Log Duty Hours"))
 ```
 
 ## Your Schedule — Next Week
@@ -118,10 +123,6 @@ cat(stat_box(ifelse(is.na(d$attendance$n_this_week), "—", d$attendance$n_this_
              "Logged This Week"))
 ```
 </tr></table>
-```{r attendance-link}
-#| results: asis
-cat(action_link(d$attendance$link, "Review or Add Attendance"))
-```
 
 ## Evaluations & Feedback
 
@@ -138,10 +139,8 @@ cat(stat_box(ifelse(is.na(d$evals$n_completed_2wk), "—", d$evals$n_completed_2
 
 ```{r eval-nudge}
 #| results: asis
-if (!isTRUE(d$evals$completed_done_this_week)) {
+if (!isTRUE(d$evals$completed_done_this_week))
   cat('<p style="font-size:0.85rem;">Haven\'t evaluated a faculty member this week? A couple minutes of feedback goes a long way.</p>')
-  cat(action_link(d$evals$link, "Evaluate a Faculty Member"))
-}
 if (is.na(d$evals$n_received_week) || d$evals$n_received_week == 0)
   cat('<p style="font-size:0.85rem;">No evaluations received this week — consider asking a supervising faculty member for feedback.</p>')
 cat(action_link(RESIDENT_ASSESSMENT_URL, "Share Evaluation Link with a Faculty Member"))
@@ -164,16 +163,16 @@ if (!is.null(tm) && is.data.frame(tm) && nrow(tm) > 0) {
   names_str <- paste(unique(tm$name), collapse = ", ")
   cat(sprintf('<p style="font-size:0.85rem;">People you\'ve recently worked with (last 4 weeks): %s</p>', names_str))
 }
-if (!isTRUE(d$peer$done_this_week))
-  cat(action_link(d$peer$link, "Review a Peer"))
 ```
 
 ## Scholarship
 
 <p style="font-size:0.9rem;">Presented at noon conference, PCEC, or an afternoon-school session? Log it — every in-program presentation counts.</p>
-```{r schol-link}
+
+```{r bottom-cta}
 #| results: asis
-cat(action_link(d$scholarship_link, "Add Scholarship"))
+cat(action_link(if (nzchar(params$digest_app_url)) params$digest_app_url else NA_character_,
+                "Click Here to Update Your Information"))
 ```
 
 <hr style="margin: 24px 0; border: none; border-top: 1px solid #e0e0e0;">
