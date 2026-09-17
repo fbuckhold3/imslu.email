@@ -35,6 +35,19 @@ build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
            "section=", section)
   }
 
+  # ── Header info: access code + coach name (same fields the Shiny app's
+  # roundsui_resident_panel() shows) ────────────────────────────────────────
+  resident <- tryCatch({
+    roster <- gmed::load_rdm_residents_only(rdm_token = rdm_token, redcap_url = redcap_url)
+    row <- roster[roster$record_id == as.character(record_id), , drop = FALSE]
+    access_code <- if (nrow(row) > 0) row$access_code[1] else NA_character_
+    coach_code  <- if (nrow(row) > 0) row$coach[1] else NA_character_
+    coach_name  <- if (!is.na(coach_code) && nzchar(coach_code)) {
+      tryCatch(gmed::get_coach_name_from_code(coach_code), error = function(e) NA_character_)
+    } else NA_character_
+    list(access_code = access_code, coach_name = coach_name)
+  }, error = function(e) list(access_code = NA_character_, coach_name = NA_character_))
+
   # ── Duty hours: this week's total + 4-week rolling average + 80h flag ────
   duty <- tryCatch({
     summ <- amiontools::build_duty_hour_summary(rdm_token = rdm_token, redcap_url = redcap_url)
@@ -118,6 +131,7 @@ build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
 
   list(
     record_id  = record_id,
+    resident   = resident,
     duty       = duty,
     schedule   = schedule,
     attendance = attendance,

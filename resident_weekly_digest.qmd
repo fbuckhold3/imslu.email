@@ -51,12 +51,28 @@ action_link <- function(url, text) {
   if (is.na(url)) return(sprintf('<p style="color:#6c757d; font-size:0.85rem;">%s (link unavailable — open the resident digest app directly)</p>', text))
   sprintf('<p><a href="%s" style="background:#003d5c; color:#fff; padding:8px 16px; border-radius:4px; text-decoration:none; font-size:0.9rem;">%s &rarr;</a></p>', url, text)
 }
+
+# Same live app used by mod_eval_summary.R in imslu.resident.digest — a
+# resident shares this link with a supervising faculty member to prompt an
+# evaluation. Kept as a literal constant in both places (thin repos, no
+# shared package layer between them for a single URL).
+RESIDENT_ASSESSMENT_URL <- "https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud"
 ```
 
 <div style="font-family: -apple-system, Segoe UI, Helvetica, Arial, sans-serif; max-width: 640px; margin: 0 auto; color:#212529;">
 
 <h2 style="color:#003d5c;">`r params$resident_name`'s Weekly Resident Review</h2>
 <p style="color:#6c757d; font-size:0.85rem;">Week of `r format(Sys.Date(), "%B %d, %Y")`</p>
+```{r header-info}
+#| results: asis
+if (!is.na(d$resident$access_code) || !is.na(d$resident$coach_name)) {
+  bits <- c(
+    if (!is.na(d$resident$coach_name)) sprintf("Coach: <strong>%s</strong>", d$resident$coach_name),
+    if (!is.na(d$resident$access_code)) sprintf("Access code: <strong>%s</strong>", d$resident$access_code)
+  )
+  cat(sprintf('<p style="color:#6c757d; font-size:0.85rem;">%s</p>', paste(bits, collapse = " &nbsp;&middot;&nbsp; ")))
+}
+```
 <p style="color:#212529; font-size:0.95rem;">As the week wraps up, here's a look at your duty hours, schedule, attendance, and evaluations — with a few quick things worth updating.</p>
 
 ## Duty Hours
@@ -128,6 +144,7 @@ if (!isTRUE(d$evals$completed_done_this_week)) {
 }
 if (is.na(d$evals$n_received_week) || d$evals$n_received_week == 0)
   cat('<p style="font-size:0.85rem;">No evaluations received this week — consider asking a supervising faculty member for feedback.</p>')
+cat(action_link(RESIDENT_ASSESSMENT_URL, "Share Evaluation Link with a Faculty Member"))
 ```
 
 ## Peer Review
