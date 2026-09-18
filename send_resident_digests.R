@@ -36,7 +36,7 @@ digest_app_url <- Sys.getenv("DIGEST_APP_URL", unset = "")
 PA_URL         <- Sys.getenv("POWER_AUTOMATE_RESIDENT_URL", unset = "")
 
 # Set TRUE to render + print routing info without POSTing to Power Automate
-TEST_MODE <- TRUE
+TEST_MODE <- FALSE
 
 # Rate limit between PA trigger calls (seconds) — avoids overwhelming the flow
 PA_DELAY_SEC <- 2
