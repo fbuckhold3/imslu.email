@@ -30,10 +30,23 @@
 build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
                                        digest_app_url = "") {
 
+  # ── Batch pre-fetch cache: send_resident_digests.R (looping over the full
+  # roster) sets DIGEST_BATCH_CACHE to an .rds path containing a pre-pulled
+  # crosswalk/amion/roster, so each resident's separate quarto_render()
+  # subprocess doesn't re-pull the entire Amion dataset + roster from
+  # scratch. Unset (e.g. the live Shiny app rendering one resident at
+  # login, or an ad hoc test render) -> falls back to fetching fresh, same
+  # as before this existed.
+  .cache_path <- Sys.getenv("DIGEST_BATCH_CACHE", unset = "")
+  .cache <- if (nzchar(.cache_path) && file.exists(.cache_path)) {
+    tryCatch(readRDS(.cache_path), error = function(e) NULL)
+  } else NULL
+
   # ── Header info: access code + coach name (same fields the Shiny app's
   # roundsui_resident_panel() shows) ────────────────────────────────────────
   resident <- tryCatch({
-    roster <- gmed::load_rdm_residents_only(rdm_token = rdm_token, redcap_url = redcap_url)
+    roster <- if (!is.null(.cache)) .cache$roster else
+      gmed::load_rdm_residents_only(rdm_token = rdm_token, redcap_url = redcap_url)
     row <- roster[roster$record_id == as.character(record_id), , drop = FALSE]
     access_code <- if (nrow(row) > 0) row$access_code[1] else NA_character_
     coach_code  <- if (nrow(row) > 0) row$coach[1] else NA_character_
@@ -45,7 +58,12 @@ build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
 
   # ── Duty hours: this week's total + 4-week rolling average + 80h flag ────
   duty <- tryCatch({
-    summ <- amiontools::build_duty_hour_summary(rdm_token = rdm_token, redcap_url = redcap_url)
+    summ <- if (!is.null(.cache)) {
+      amiontools::build_duty_hour_summary(rdm_token = rdm_token, redcap_url = redcap_url,
+                                          crosswalk = .cache$crosswalk, amion = .cache$amion)
+    } else {
+      amiontools::build_duty_hour_summary(rdm_token = rdm_token, redcap_url = redcap_url)
+    }
     wk <- summ$weekly[summ$weekly$record_id == as.character(record_id), , drop = FALSE]
     wk <- wk[order(wk$week_start), ]
     this_wk <- if (nrow(wk) > 0) wk[nrow(wk), ] else NULL
@@ -63,7 +81,12 @@ build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
     next_mon <- today + ((8 - as.integer(format(today, "%u"))) %% 7)
     if (next_mon == today) next_mon <- today + 7  # always the NEXT week, not today's
     next_sun <- next_mon + 6
-    detail <- amiontools::build_daily_detail(rdm_token = rdm_token, redcap_url = redcap_url)
+    detail <- if (!is.null(.cache)) {
+      amiontools::build_daily_detail(rdm_token = rdm_token, redcap_url = redcap_url,
+                                     crosswalk = .cache$crosswalk, amion = .cache$amion)
+    } else {
+      amiontools::build_daily_detail(rdm_token = rdm_token, redcap_url = redcap_url)
+    }
     rows <- detail[detail$record_id == as.character(record_id) &
                      detail$Date >= next_mon & detail$Date <= next_sun, , drop = FALSE]
     rows <- rows[order(rows$Date), ]
@@ -116,8 +139,14 @@ build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
       evaluator_id = record_id, redcap_url = redcap_url, rdm_token = rdm_token, days = 14)
     completed_this_week <- amiontools::peer_count_completed_recent(
       evaluator_id = record_id, redcap_url = redcap_url, rdm_token = rdm_token, days = 7)
-    teammates <- amiontools::get_recent_teammates(
-      resident_id = record_id, rdm_token = rdm_token, redcap_url = redcap_url, days = 28)
+    teammates <- if (!is.null(.cache)) {
+      amiontools::get_recent_teammates(
+        resident_id = record_id, rdm_token = rdm_token, redcap_url = redcap_url, days = 28,
+        crosswalk = .cache$crosswalk, amion = .cache$amion)
+    } else {
+      amiontools::get_recent_teammates(
+        resident_id = record_id, rdm_token = rdm_token, redcap_url = redcap_url, days = 28)
+    }
     list(n_completed_2wk = completed$n, done_this_week = completed_this_week$n > 0,
          teammates = teammates)
   }, error = function(e) list(n_completed_2wk = NA_integer_, done_this_week = TRUE,

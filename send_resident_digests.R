@@ -36,7 +36,7 @@ digest_app_url <- Sys.getenv("DIGEST_APP_URL", unset = "")
 PA_URL         <- Sys.getenv("POWER_AUTOMATE_RESIDENT_URL", unset = "")
 
 # Set TRUE to render + print routing info without POSTing to Power Automate
-TEST_MODE <- FALSE
+TEST_MODE <- TRUE
 
 # Rate limit between PA trigger calls (seconds) — avoids overwhelming the flow
 PA_DELAY_SEC <- 2
@@ -82,6 +82,23 @@ if (length(args) > 0) {
   message(sprintf("  Filtering to %d resident(s) matching '%s'", nrow(active_residents), name_filter))
 }
 if (nrow(active_residents) == 0) stop("No residents found. Check filters/environment.")
+
+# ---- Pre-fetch shared data once for the whole batch ─────────────────────────
+# Each resident's digest renders in its own quarto subprocess, so without
+# this every one of them independently re-pulls the entire Amion dataset +
+# resident roster from scratch (87 residents = 87 full re-pulls). Fetch once
+# here, hand it to each subprocess via a temp .rds file + env var (inherited
+# by quarto_render()'s child process); build_resident_digest_data() picks it
+# up automatically when DIGEST_BATCH_CACHE is set.
+message("\nPre-fetching shared Amion/roster data once for the whole batch...")
+digest_cache_path <- tempfile(fileext = ".rds")
+saveRDS(list(
+  crosswalk = amiontools::get_amion_crosswalk(rdm_token = rdm_token, redcap_url = redcap_url, verified_only = TRUE),
+  amion     = amiontools::fetch_amion_data(),
+  roster    = gmed::load_rdm_residents_only(rdm_token = rdm_token, redcap_url = redcap_url)
+), digest_cache_path)
+Sys.setenv(DIGEST_BATCH_CACHE = digest_cache_path)
+message("  Cached to ", digest_cache_path)
 
 # ---- Helper: render + send one digest ───────────────────────────────────────
 
@@ -180,5 +197,7 @@ for (i in seq_len(nrow(active_residents))) {
   row <- active_residents[i, ]
   send_one_digest(record_id = row$record_id, name = row$name, email = row$email)
 }
+
+unlink(digest_cache_path)
 
 message("\nDone. Check above for any warnings or errors.")
