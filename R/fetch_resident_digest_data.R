@@ -65,6 +65,9 @@ build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
       amiontools::build_duty_hour_summary(rdm_token = rdm_token, redcap_url = redcap_url)
     }
     wk <- summ$weekly[summ$weekly$record_id == as.character(record_id), , drop = FALSE]
+    # weekly spans the full AY, including future weeks Amion has already
+    # scheduled -- drop those so the last row is the current week.
+    wk <- wk[wk$week_start <= Sys.Date(), , drop = FALSE]
     wk <- wk[order(wk$week_start), ]
     this_wk <- if (nrow(wk) > 0) wk[nrow(wk), ] else NULL
     list(
