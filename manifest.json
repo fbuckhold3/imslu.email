@@ -204,24 +204,24 @@
         "License": "MIT + file LICENSE",
         "Encoding": "UTF-8",
         "Roxygen": "list(markdown = TRUE)",
-        "Imports": "dplyr,\nDT,\ngmed,\nhttr,\nlubridate,\nplotly,\nREDCapR,\nshiny,\nshinycssloaders,\ntidyr",
+        "Imports": "dplyr,\nDT,\ngmed,\nhttr,\njsonlite,\nlubridate,\nplotly,\nREDCapR,\nshiny,\nshinycssloaders,\ntidyr",
         "Suggests": "testthat (>= 3.0.0)",
         "Config/testthat/edition": "3",
         "Config/roxygen2/version": "8.0.0",
         "Author": "Fred Buckhold [aut, cre]",
         "Maintainer": "Fred Buckhold <fbuckhold3@icloud.com>",
-        "Built": "R 4.6.0; ; 2026-09-17 16:31:19 UTC; unix",
+        "Built": "R 4.6.0; ; 2026-10-21 00:53:33 UTC; unix",
         "RemoteType": "github",
         "RemoteHost": "api.github.com",
         "RemoteUsername": "fbuckhold3",
         "RemoteRepo": "amiontools",
-        "RemoteRef": "main",
-        "RemoteSha": "f81278a1c8f4c24f317926f42c14127a660342da",
+        "RemoteRef": "38e609f946d7333c6191efd96c5e21a685a6cc70",
+        "RemoteSha": "38e609f946d7333c6191efd96c5e21a685a6cc70",
         "GithubHost": "api.github.com",
         "GithubRepo": "amiontools",
         "GithubUsername": "fbuckhold3",
-        "GithubRef": "main",
-        "GithubSHA1": "f81278a1c8f4c24f317926f42c14127a660342da"
+        "GithubRef": "38e609f946d7333c6191efd96c5e21a685a6cc70",
+        "GithubSHA1": "38e609f946d7333c6191efd96c5e21a685a6cc70"
       }
     },
     "askpass": {
@@ -1037,23 +1037,23 @@
         "Roxygen": "list(markdown = TRUE)",
         "Suggests": "knitr,\nrmarkdown,\ntestthat (>= 3.0.0)",
         "Config/testthat/edition": "3",
-        "Imports": "dplyr, httr, readr, jsonlite, DT, reactable, htmltools,\nplotly, rlang, config, lubridate, tidyr, shinyjs, shiny, bslib,\ndata.table, tibble, purrr, roundsui",
+        "Imports": "dplyr, httr, curl, readr, jsonlite, DT, reactable, htmltools,\nplotly, rlang, config, lubridate, tidyr, shinyjs, shiny, bslib,\ndata.table, tibble, purrr, roundsui",
         "Config/roxygen2/version": "8.0.0",
         "Author": "First Last [aut, cre]",
         "Maintainer": "First Last <first.last@example.com>",
-        "Built": "R 4.6.0; ; 2026-09-17 14:28:46 UTC; unix",
+        "Built": "R 4.6.0; ; 2026-09-30 19:11:57 UTC; unix",
         "RemoteType": "github",
         "Remotes": "fbuckhold3/roundsui",
         "RemoteHost": "api.github.com",
         "RemoteUsername": "fbuckhold3",
         "RemoteRepo": "gmed",
         "RemoteRef": "main",
-        "RemoteSha": "edf636647a1e5991afa50d2e4aa8e9b356eb7361",
+        "RemoteSha": "45c650c203d1a75f22406f5a92ee5d3d5c936fb3",
         "GithubHost": "api.github.com",
         "GithubRepo": "gmed",
         "GithubUsername": "fbuckhold3",
         "GithubRef": "main",
-        "GithubSHA1": "edf636647a1e5991afa50d2e4aa8e9b356eb7361"
+        "GithubSHA1": "45c650c203d1a75f22406f5a92ee5d3d5c936fb3"
       }
     },
     "gtable": {
@@ -2942,7 +2942,7 @@
       "checksum": "34256341b1fd6543388f0a7d8c803845"
     },
     "R/fetch_resident_digest_data.R": {
-      "checksum": "ec153179ebdf8d15241299952e9f31ab"
+      "checksum": "ef8cd86b8344a665e530b073d4c062a4"
     },
     "R/utils.R": {
       "checksum": "7d0127bd1d91dec6a1c12b59c4dfce88"
@@ -2951,13 +2951,13 @@
       "checksum": "e24d44008d8dbc7b38b27a8cb30e62c2"
     },
     "render_resident_digests.R": {
-      "checksum": "671dcfe6916d8398551963ba02059397"
+      "checksum": "6d972e4c1bfdcb847165e5919b34bb12"
     },
     "renv.lock": {
-      "checksum": "3f956360d8e06e2e45944eeb10eb7803"
+      "checksum": "38de9c8a98a6eba532f14087a3cfb36f"
     },
     "resident_weekly_digest.qmd": {
-      "checksum": "6a46509df9d578e41994d1551d1ae654"
+      "checksum": "a5dec787ad881faa598414cdb4743a00"
     },
     "send_faculty_reports.R": {
       "checksum": "228f28e80c3273d76d1037cdcc5f0aec"
