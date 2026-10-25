@@ -90,13 +90,20 @@ if (nrow(active_residents) == 0) stop("No residents found. Check filters/environ
 # here, hand it to each subprocess via a temp .rds file + env var (inherited
 # by quarto_render()'s child process); build_resident_digest_data() picks it
 # up automatically when DIGEST_BATCH_CACHE is set.
-message("\nPre-fetching shared Amion/roster data once for the whole batch...")
+message("\nPre-fetching shared Amion/roster/activity data once for the whole batch...")
 digest_cache_path <- tempfile(fileext = ".rds")
+batch_crosswalk <- amiontools::get_amion_crosswalk(rdm_token = rdm_token, redcap_url = redcap_url, verified_only = TRUE)
+batch_amion     <- amiontools::fetch_amion_data()
 saveRDS(list(
-  crosswalk = amiontools::get_amion_crosswalk(rdm_token = rdm_token, redcap_url = redcap_url, verified_only = TRUE),
-  amion     = amiontools::fetch_amion_data(),
-  roster    = gmed::load_rdm_residents_only(rdm_token = rdm_token, redcap_url = redcap_url)
+  crosswalk = batch_crosswalk,
+  amion     = batch_amion,
+  roster    = gmed::load_rdm_residents_only(rdm_token = rdm_token, redcap_url = redcap_url),
+  # Per-resident-day duty hours + attendance for everyone, built once —
+  # each digest filters it to its own resident.
+  activity  = amiontools::build_resident_activity(rdm_token = rdm_token, redcap_url = redcap_url,
+                                                  crosswalk = batch_crosswalk, amion = batch_amion)
 ), digest_cache_path)
+rm(batch_crosswalk, batch_amion)
 Sys.setenv(DIGEST_BATCH_CACHE = digest_cache_path)
 message("  Cached to ", digest_cache_path)
 

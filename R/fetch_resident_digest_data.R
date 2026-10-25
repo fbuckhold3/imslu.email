@@ -56,31 +56,54 @@ build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
     list(access_code = access_code, coach_name = coach_name)
   }, error = function(e) list(access_code = NA_character_, coach_name = NA_character_))
 
-  # ── Duty hours: this week's total + 4-week rolling average + 80h flag ────
-  duty <- tryCatch({
-    summ <- if (!is.null(.cache)) {
-      amiontools::build_duty_hour_summary(rdm_token = rdm_token, redcap_url = redcap_url,
-                                          crosswalk = .cache$crosswalk, amion = .cache$amion)
+  # ── Duty hours + attendance: amiontools' shared activity table ──────────
+  # One per-resident-day table (schedule, expected/logged conference, duty
+  # hours with confirmation status) so the email reports the same numbers
+  # as ind.dash. The batch run builds it once for everyone; an ad hoc
+  # render builds it for this resident only. Weeks are Sunday-Saturday.
+  activity <- tryCatch({
+    if (!is.null(.cache) && !is.null(.cache$activity)) {
+      .cache$activity[.cache$activity$record_id == as.character(record_id), , drop = FALSE]
     } else {
-      amiontools::build_duty_hour_summary(rdm_token = rdm_token, redcap_url = redcap_url)
+      amiontools::build_resident_activity(rdm_token = rdm_token, redcap_url = redcap_url,
+                                          record_ids = as.character(record_id))
     }
-    wk <- summ$weekly[summ$weekly$record_id == as.character(record_id), , drop = FALSE]
-    # weekly spans the full AY, including future weeks Amion has already
-    # scheduled -- drop those so the last row is the current week.
-    wk <- wk[wk$week_start <= Sys.Date(), , drop = FALSE]
-    wk <- wk[order(wk$week_start), ]
-    this_wk <- if (nrow(wk) > 0) wk[nrow(wk), ] else NULL
+  }, error = function(e) NULL)
+
+  # DIGEST_AS_OF (YYYY-MM-DD) renders the digest as of another date — for
+  # testing a Friday send on another day. Unset in production.
+  today      <- as.Date(Sys.getenv("DIGEST_AS_OF", unset = as.character(Sys.Date())))
+  week_start <- as.Date(lubridate::floor_date(today, "week", week_start = 7))
+  week_end   <- week_start + 6
+
+  # Hours, rolling average, and flags read the full week (Saturday is
+  # anticipated) — the same weeks ind.dash's Duty Hours page shows.
+  duty <- tryCatch({
+    stopifnot(!is.null(activity), nrow(activity) > 0)
+    wk_full <- amiontools::summarise_activity(activity, "week", "resident", through = week_end)
+    this_wk <- wk_full[wk_full$period_start == week_start, , drop = FALSE]
+    # Confirmation counts only cover days that have happened.
+    wk_now  <- amiontools::summarise_activity(activity, "week", "resident", through = today)
+    now_wk  <- wk_now[wk_now$period_start == week_start, , drop = FALSE]
     list(
-      this_week_hours   = if (!is.null(this_wk)) round(this_wk$Total_Hours, 1) else NA_real_,
-      rolling_4wk_avg   = if (!is.null(this_wk)) round(this_wk$rolling_4wk_avg_hours, 1) else NA_real_,
-      flag_80h          = if (!is.null(this_wk)) isTRUE(this_wk$flag_80h) else FALSE
+      this_week_hours   = if (nrow(this_wk)) round(this_wk$duty_hours, 1) else NA_real_,
+      rolling_4wk_avg   = if (nrow(this_wk)) round(this_wk$rolling_4wk_avg_hours, 1) else NA_real_,
+      flag_80h          = nrow(this_wk) > 0 && isTRUE(this_wk$flag_80h),
+      days_per_week_4wk = if (nrow(this_wk)) round(this_wk$rolling_4wk_days_per_week, 1) else NA_real_,
+      flag_days_over    = nrow(this_wk) > 0 && isTRUE(this_wk$flag_days_over_target),
+      flag_days_off     = nrow(this_wk) > 0 && isTRUE(this_wk$flag_days_off_violation),
+      days_unconfirmed  = if (nrow(now_wk)) now_wk$days_unconfirmed else 0L,
+      days_needs_entry  = if (nrow(now_wk)) now_wk$days_needs_entry else 0L,
+      days_confirmed    = if (nrow(now_wk)) now_wk$days_confirmed else 0L
     )
   }, error = function(e) list(this_week_hours = NA_real_, rolling_4wk_avg = NA_real_,
-                              flag_80h = FALSE))
+                              flag_80h = FALSE, days_per_week_4wk = NA_real_,
+                              flag_days_over = FALSE, flag_days_off = FALSE,
+                              days_unconfirmed = NA_integer_, days_needs_entry = NA_integer_,
+                              days_confirmed = NA_integer_))
 
   # ── Upcoming week's schedule (next Mon-Sun) ───────────────────────────────
   schedule <- tryCatch({
-    today <- Sys.Date()
     next_mon <- today + ((8 - as.integer(format(today, "%u"))) %% 7)
     if (next_mon == today) next_mon <- today + 7  # always the NEXT week, not today's
     next_sun <- next_mon + 6
@@ -96,32 +119,18 @@ build_resident_digest_data <- function(record_id, rdm_token, redcap_url,
     list(week_start = next_mon, week_end = next_sun, rows = rows)
   }, error = function(e) list(week_start = NA, week_end = NA, rows = data.frame()))
 
-  # ── Noon-conference attendance this week ──────────────────────────────────
+  # ── Noon-conference attendance this week (Sunday through today) ─────────
   attendance <- tryCatch({
-    today <- Sys.Date()
-    week_start <- today - ((as.integer(format(today, "%u")) - 1) %% 7)
-    resp <- httr::POST(
-      redcap_url,
-      body = list(token = rdm_token, content = "record", action = "export",
-                  format = "json", type = "flat",
-                  records = as.character(record_id), `forms[0]` = "questions",
-                  `fields[0]` = "record_id",
-                  rawOrLabel = "raw", rawOrLabelHeaders = "raw",
-                  exportCheckboxLabel = "false", exportSurveyFields = "false",
-                  exportDataAccessGroups = "false", returnFormat = "json"),
-      encode = "form", httr::timeout(30))
-    n_this_week <- 0L
-    if (httr::status_code(resp) == 200) {
-      dat <- jsonlite::fromJSON(httr::content(resp, "text", encoding = "UTF-8"))
-      if (is.data.frame(dat) && nrow(dat) > 0) {
-        dat <- dat[!is.na(dat$redcap_repeat_instrument) &
-                     dat$redcap_repeat_instrument == "questions", , drop = FALSE]
-        dts <- suppressWarnings(as.Date(dat$q_date))
-        n_this_week <- sum(dts >= week_start & dts <= today, na.rm = TRUE)
-      }
-    }
-    list(week_start = week_start, n_this_week = n_this_week)
-  }, error = function(e) list(week_start = NA, n_this_week = NA_integer_))
+    stopifnot(!is.null(activity), nrow(activity) > 0)
+    wk <- amiontools::summarise_activity(activity, "week", "resident", through = today)
+    wk <- wk[wk$period_start == week_start, , drop = FALSE]
+    list(week_start         = week_start,
+         n_expected         = if (nrow(wk)) wk$conf_expected_days else 0L,
+         n_attended         = if (nrow(wk)) wk$conf_attended_days else 0L,
+         n_logged_unexpected = if (nrow(wk)) wk$conf_logged_unexpected_days else 0L,
+         n_afternoon_school = if (nrow(wk)) wk$afternoon_school_days else 0L)
+  }, error = function(e) list(week_start = NA, n_expected = NA_integer_, n_attended = NA_integer_,
+                              n_logged_unexpected = NA_integer_, n_afternoon_school = NA_integer_))
 
   # ── Evaluations received (past week) + completed (last 2 weeks) ─────────
   evals <- tryCatch({

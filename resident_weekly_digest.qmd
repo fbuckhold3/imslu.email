@@ -88,15 +88,41 @@ cat(action_link(if (nzchar(params$digest_app_url)) params$digest_app_url else NA
 ```{r duty-stats}
 #| results: asis
 cat(stat_box(ifelse(is.na(d$duty$this_week_hours), "—", d$duty$this_week_hours), "Hours This Week"))
-cat(stat_box(ifelse(is.na(d$duty$rolling_4wk_avg), "—", d$duty$rolling_4wk_avg), "4-Week Avg / Week",
+cat(stat_box(ifelse(is.na(d$duty$rolling_4wk_avg), "—", d$duty$rolling_4wk_avg), "4-Week Avg Hours / Week",
              warn = isTRUE(d$duty$flag_80h)))
+cat(stat_box(ifelse(is.na(d$duty$days_per_week_4wk), "—", d$duty$days_per_week_4wk), "4-Week Avg Days Worked / Week",
+             warn = isTRUE(d$duty$flag_days_over) || isTRUE(d$duty$flag_days_off)))
 ```
 </tr></table>
 
-```{r duty-flag}
+```{r duty-flags}
 #| results: asis
+warn_p <- function(txt, color = "#b8860b")
+  cat(sprintf('<p style="color:%s; font-size:0.85rem;">%s</p>', color, txt))
 if (isTRUE(d$duty$flag_80h))
-  cat('<p style="color:#b8860b; font-size:0.85rem;">⚠ Your 4-week rolling average is over 80 hours/week. Review your entries and talk to your program if this looks wrong.</p>')
+  warn_p("&#9888; Your 4-week rolling average is over 80 hours/week. Review your entries and talk to your program if this looks wrong.", "#c0392b")
+if (isTRUE(d$duty$flag_days_off)) {
+  warn_p("&#9888; Over the last 4 weeks you've averaged fewer than 1 day off in 7. Check your entries, and talk to your program if that's accurate.", "#c0392b")
+} else if (isTRUE(d$duty$flag_days_over)) {
+  warn_p("&#9888; Over the last 4 weeks you've averaged more than 5.5 days worked per week.")
+}
+```
+
+```{r duty-verify}
+#| results: asis
+ne <- d$duty$days_needs_entry; uc <- d$duty$days_unconfirmed
+if (!is.na(ne) && ne > 0)
+  cat(sprintf('<p style="font-size:0.9rem;"><strong>%d day%s this week need%s hours entered.</strong> Elective, Emergency, and Admin days have no schedule estimate, so they count as 0 hours until you log them.</p>',
+              ne, if (ne == 1) "" else "s", if (ne == 1) "s" else ""))
+if (!is.na(uc) && uc > 0)
+  cat(sprintf('<p style="font-size:0.9rem;"><strong>%d day%s this week %s still on the schedule estimate.</strong> Take a minute to confirm or correct %s.</p>',
+              uc, if (uc == 1) "" else "s", if (uc == 1) "is" else "are", if (uc == 1) "it" else "them"))
+if (isTRUE(ne > 0 || uc > 0)) {
+  cat(action_link(if (nzchar(params$digest_app_url)) params$digest_app_url else NA_character_,
+                  "Verify Your Duty Hours"))
+} else if (isTRUE(ne == 0 && uc == 0 && d$duty$days_confirmed > 0)) {
+  cat('<p style="font-size:0.85rem; color:#2e7d32;">&#10003; All of this week\'s days so far are confirmed. Thank you.</p>')
+}
 ```
 
 ## Your Schedule — Next Week
@@ -120,10 +146,29 @@ if (is.null(rows) || nrow(rows) == 0) {
 <table style="border-collapse: collapse; width:100%;"><tr>
 ```{r attendance-stats}
 #| results: asis
-cat(stat_box(ifelse(is.na(d$attendance$n_this_week), "—", d$attendance$n_this_week),
-             "Logged This Week"))
+a <- d$attendance
+logged_lbl <- if (is.na(a$n_attended) || is.na(a$n_expected)) "—" else sprintf("%d of %d", a$n_attended, a$n_expected)
+cat(stat_box(logged_lbl, "Expected Noon Conferences Logged This Week",
+             warn = isTRUE(a$n_expected > 0 && a$n_attended < a$n_expected)))
+if (isTRUE(a$n_afternoon_school > 0))
+  cat(stat_box(a$n_afternoon_school, "Afternoon School Logged"))
 ```
 </tr></table>
+
+```{r attendance-note}
+#| results: asis
+a <- d$attendance
+if (isTRUE(a$n_expected == 0))
+  cat('<p style="font-size:0.85rem; color:#6c757d;">Your schedule didn\'t have you expected at noon conference this week.</p>')
+if (isTRUE(a$n_expected > 0 && a$n_attended < a$n_expected)) {
+  cat('<p style="font-size:0.9rem;">Missed a check-in? You can log a conference you attended after the fact.</p>')
+  cat(action_link(if (nzchar(params$digest_app_url)) params$digest_app_url else NA_character_,
+                  "Log Conference Attendance"))
+}
+if (isTRUE(a$n_logged_unexpected > 0))
+  cat(sprintf('<p style="font-size:0.8rem; color:#6c757d;">Also logged %d noon conference%s on day%s your schedule didn\'t expect you — thanks for going.</p>',
+              a$n_logged_unexpected, if (a$n_logged_unexpected == 1) "" else "s", if (a$n_logged_unexpected == 1) "" else "s"))
+```
 
 ## Evaluations & Feedback
 
