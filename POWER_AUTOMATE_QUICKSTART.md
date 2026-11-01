@@ -42,7 +42,7 @@
    <p><strong>Quick Links:</strong></p>
    <ul>
      <li><a href="https://fbuckhold3-imslu-resident-assessment.share.connect.posit.cloud">Submit Resident Assessment</a></li>
-     <li><a href="https://fbuckhold3-imslu-facultyeval.share.connect.posit.cloud">Submit Faculty Evaluation</a></li>
+     <li><a href="https://01a0afbe-d624-6e3d-f643-5c2b2a613602.share.connect.posit.cloud?section=faculty_eval">Submit Faculty Evaluation</a></li>
      <li><a href="https://fbuckhold3-imslu-at-noon.share.connect.posit.cloud">Submit Attendance at Noon Conference</a></li>
    </ul>
    <p>See the attached report for full details including charts and tables.</p>

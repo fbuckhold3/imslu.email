@@ -25,3 +25,6 @@ config/tokens.R
 # Output files (if generating locally)
 *.html
 *.pdf
+
+/.quarto/
+**/*.quarto_ipynb
