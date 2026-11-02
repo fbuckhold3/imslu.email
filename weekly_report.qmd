@@ -77,7 +77,7 @@ if (nrow(cc_open)) {
 add(kpi_row(glance))
 
 add(p(link_button(URL$assessment, "Assess a resident"),
-      link_button(URL$faculty, "Evaluate a faculty member"),
+      link_button(URL$faculty, "Residents: evaluate a faculty member"),
       link_button(URL$noon, "Log noon conference"),
       link_button(paste0(URL$digest, "?section=duty_hours"), "Log duty hours"),
       link_button(paste0(URL$digest, "?section=peer_review"), "Do a peer review")))
@@ -154,7 +154,7 @@ if (nrow(fev$top_residents)) {
                 esc(fev$top_residents$resident[1]), fev$top_residents$n[1])))
   add(html_table(fev$top_residents |> transmute(Resident = esc(resident), Evaluations = num(n))))
 }
-add(p(link_button(URL$faculty, "Evaluate a faculty member")))
+add(p(link_button(URL$faculty, "Residents: evaluate a faculty member")))
 
 # ── Also this week: duty hours, peer review, MKSAP ──────────────────────────
 add(h2("Also tracking"))
