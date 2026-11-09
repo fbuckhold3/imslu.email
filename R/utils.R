@@ -312,6 +312,11 @@ count_questions_by_rotation <- function(res_data, start_date) {
   questions <- res_data[res_data$redcap_repeat_instrument == "Questions" &
                          !is.na(res_data$q_date), , drop = FALSE]
 
+  # A "did not attend" entry is not attendance (raw code or label).
+  if ("q_attended" %in% names(questions)) {
+    questions <- questions[!questions$q_attended %in% c("0", "Did not attend"), , drop = FALSE]
+  }
+
   if (nrow(questions) == 0) {
     return(data.frame(Rotation = character(0),
                      `Question Count` = integer(0),
